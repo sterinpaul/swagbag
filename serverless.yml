@@ -1,0 +1,30 @@
+service: t2p-api-v2 #Name of your App
+
+provider:
+ name: aws
+ runtime: nodejs12.x # Node JS version
+ memorySize: 512
+ timeout: 30
+ stage: production
+ region: ap-south-1 # AWS region
+ lambdaHashingVersion: 20201221
+ apiGateway:
+    shouldStartNameWithService: true
+
+functions:
+ api:
+   handler: lambda.handler
+   events:
+     - http: ANY /{proxy+}
+     - http: ANY /
+
+plugins:
+ - serverless-apigw-binary
+
+custom:
+  apigwBinary:
+    types:           #list of mime-types
+      - 'image/jpeg'
+      - 'image/png'
+      - 'text/html'
+      - 'application/json'
