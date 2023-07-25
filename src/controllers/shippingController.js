@@ -85,25 +85,28 @@ module.exports = {
           _id: 1,
           zone_name: "Zone 1",
           cix_price: 65,
-          ciy: 33,
-          twv: "5kg",
+          ciy_price: 56,
+          twv: 5.5,
+          freeShipping: false,
         },
         {
           _id: 2,
           zone_name: "Zone 2",
           cix_price: 75,
           ciy: 22,
-          twv: "10kg",
+          twv: 10,
+          freeShipping: true,
         },
         {
           _id: 3,
           zone_name: "Zone 3",
           cix_price: 90,
-          ciy: 33,
-          twv: "20kg",
+          ciy_price: 33,
+          twv: 20.1,
+          freeShipping: false,
         },
       ];
-      res.status(200).json({ zones: data });
+      res.status(200).json({ status: "success", result: data, totalCount: data.length });
     } catch (error) {
       res.status(405).json({ error: error.message });
     }
