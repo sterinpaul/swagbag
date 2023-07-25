@@ -1,1064 +1,1614 @@
+const shippingController = require("../controllers/shippingController");
+
 module.exports = function (app) {
-    var AdminController = require("../controllers/AdminController");
-    var AdminController = require("../controllers/AdminController");
+  var AdminController = require("../controllers/AdminController");
+  var AdminController = require("../controllers/AdminController");
+
+  const multer = require("multer");
+  var storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+      cb(null, "uploads");
+    },
+    filename: function (req, file, cb) {
+      cb(null, file.fieldname + "-" + Date.now() + "." + "zip");
+    },
+  });
+
+  var upload = multer({ storage: storage });
+
+  const { check } = require("express-validator");
+  const jwt = require("jsonwebtoken");
+  const JWT_SECRET = "krishna";
+
+  function generateAccessToken(key) {
+    // expires after half and hour (1800 seconds = 30 minutes)
+    const accessToken = jwt.sign({ mobile: key }, JWT_SECRET, { expiresIn: "180000s" });
+    return accessToken;
+  }
+
+  function authenticateToken(req, res, next) {
+    next();
+    //const JWT_SECRET = process.env.JWT_SECRET;
+    // Gather the jwt access token from the request header
+    //const authHeader = req.headers["authorization"];
+    //const token = authHeader && authHeader.split(" ")[0];
+    //console.log(authHeader.split(' '));
+    // if (token == null) return res.sendStatus(200); // if there isn't any token
+
+    // jwt.verify(token, JWT_SECRET, (err, mobile) => {
+    //     if (err) return res.sendStatus(200);
+    //     req.token = generateAccessToken(mobile);
+    //     next(); // pass the execution off to whatever request the client intended
+    // });
+  }
+
+  app
+
+    /// User Start ////
+
+    .post(
+      "/admin/login",
+      [
+        check("email").trim().isLength({ min: 1 }).withMessage("Enter email address"),
+        check("password").trim().isLength({ min: 1 }).withMessage("Enter password"),
+      ],
+      AdminController.login
+    )
+
+    .post(
+      "/admin/create-user",
+      [
+        check("full_name").trim().isLength({ min: 1 }).withMessage("Enter name"),
+        check("email").trim().isLength({ min: 1 }).withMessage("Enter email address"),
+        check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile number"),
+        check("password").trim().isLength({ min: 1 }).withMessage("Enter password"),
+        check("user_type").trim().isLength({ min: 1 }).withMessage("Enter user type"),
+      ],
+      authenticateToken,
+      AdminController.create_user
+    )
+
+    .post("/admin/user-list", [], authenticateToken, AdminController.user_list)
+
+    .post("/admin/update-user-status", [], authenticateToken, AdminController.update_user_status)
+
+    .post(
+      "/admin/send-email-otp",
+      [check("email").trim().isLength({ min: 1 }).withMessage("Enter email address")],
+      AdminController.send_email_otp
+    )
+
+    .post(
+      "/admin/login-with-otp",
+      [
+        check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile number"),
+        check("otp").trim().isLength({ min: 1 }).withMessage("Enter OTP"),
+      ],
+      AdminController.otp_login
+    )
+
+    .post(
+      "/admin/reset-password",
+      [check("email").trim().isLength({ min: 1 }).withMessage("Enter email address")],
+      AdminController.reset_password
+    )
+
+    .post(
+      "/admin/chnage-password",
+      [
+        check("email").trim().isLength({ min: 1 }).withMessage("Enter email address"),
+        check("otp").trim().isLength({ min: 1 }).withMessage("Enter OTP"),
+        check("password").trim().isLength({ min: 1 }).withMessage("Enter password"),
+      ],
+      AdminController.chnage_password
+    )
+
+    .post("/admin/get-profile", [], authenticateToken, AdminController.get_profile)
+
+    .post(
+      "/admin/update-profile",
+      [
+        check("id").trim().isLength({ min: 1 }).withMessage("Enter id"),
+        check("full_name").trim().isLength({ min: 1 }).withMessage("Enter name"),
+      ],
+      authenticateToken,
+      AdminController.update_profile
+    )
+
+    .post(
+      "/admin/delete-user",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter user id")],
+      authenticateToken,
+      AdminController.delete_user
+    )
+
+    .post(
+      "/admin/update-profile-image",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter id")],
+      authenticateToken,
+      AdminController.update_profile_image
+    )
+    ///// Users End ///////
+
+    /// City Start ///
+
+    .post(
+      "/admin/create-city",
+      [
+        //check('name').trim().isLength({ min: 1 }).withMessage('Enter city name')
+      ],
+      authenticateToken,
+      AdminController.create_city
+    )
+
+    .post("/admin/city-list", [], authenticateToken, AdminController.city_list)
+
+    .post("/admin/update-city-status", [], authenticateToken, AdminController.update_city_status)
+
+    .post("/admin/update-city-status-default", [], authenticateToken, AdminController.update_city_status_default)
+
+    .post("/admin/update-city-footer-status", [], authenticateToken, AdminController.update_city_footer_status)
+
+    .post("/admin/get-single-city", [], authenticateToken, AdminController.get_city)
+
+    .post(
+      "/admin/update-city",
+      [
+        // check('id').trim().isLength({ min: 1 }).withMessage('Enter city id'),
+        //check('name').trim().isLength({ min: 1 }).withMessage('Enter city name'),
+      ],
+      authenticateToken,
+      AdminController.update_city
+    )
+
+    .post(
+      "/admin/delete-city",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter city id")],
+      authenticateToken,
+      AdminController.delete_city
+    )
+
+    /// City End ///
+
+    /// Zip code Start ///
+
+    .post("/admin/all-city-list", [], authenticateToken, AdminController.all_city_list)
+
+    .post(
+      "/admin/create-zipcode",
+      [
+        check("name").trim().isLength({ min: 1 }).withMessage("Enter city name"),
+        check("city").trim().isLength({ min: 1 }).withMessage("Select city"),
+      ],
+      authenticateToken,
+      AdminController.create_zipcode
+    )
+
+    .post("/admin/zipcode-list", [], authenticateToken, AdminController.zipcode_list)
+
+    .post("/admin/update-zipcode-status", [], authenticateToken, AdminController.update_zipcode_status)
+
+    .post("/admin/get-single-zipcode", [], authenticateToken, AdminController.get_zipcode)
+
+    .post(
+      "/admin/update-zipcode",
+      [
+        check("id").trim().isLength({ min: 1 }).withMessage("Enter zipcode id"),
+        check("name").trim().isLength({ min: 1 }).withMessage("Enter zipcode name"),
+        check("city").trim().isLength({ min: 1 }).withMessage("Select city"),
+      ],
+      authenticateToken,
+      AdminController.update_zipcode
+    )
+
+    .post(
+      "/admin/delete-zipcode",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter zipcode id")],
+      authenticateToken,
+      AdminController.delete_zipcode
+    )
+
+    /// Zip code End ///
+
+    /// Cusine Start ///
+
+    .post(
+      "/admin/create-cuisine",
+      [check("name").trim().isLength({ min: 1 }).withMessage("Enter cuisine name")],
+      authenticateToken,
+      AdminController.create_cuisine
+    )
+
+    .post("/admin/cuisine-list", [], authenticateToken, AdminController.cuisine_list)
+
+    .post("/admin/update-cuisine-status", [], authenticateToken, AdminController.update_cuisine_status)
+
+    .post("/admin/get-single-cuisine", [], authenticateToken, AdminController.get_cuisine)
+
+    .post(
+      "/admin/update-cuisine",
+      [
+        check("id").trim().isLength({ min: 1 }).withMessage("Enter cuisine id"),
+        check("name").trim().isLength({ min: 1 }).withMessage("Enter cuisine name"),
+      ],
+      authenticateToken,
+      AdminController.update_cuisine
+    )
+
+    .post(
+      "/admin/delete-cuisine",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter cuisine id")],
+      authenticateToken,
+      AdminController.delete_cuisine
+    )
 
-    const multer = require("multer");
-    var storage = multer.diskStorage({
-        destination: function (req, file, cb) {
-            cb(null, "uploads");
-        },
-        filename: function (req, file, cb) {
-            cb(null, file.fieldname + "-" + Date.now() + "." + "zip");
-        },
-    });
+    /// Cusine End ///
 
-    var upload = multer({ storage: storage });
+    /// Category Start ////
 
-    const { check } = require("express-validator");
-    const jwt = require("jsonwebtoken");
-    const JWT_SECRET = "krishna";
+    .post("/admin/parent-category-list", [], authenticateToken, AdminController.parent_category_list)
 
-    function generateAccessToken(key) {
-        // expires after half and hour (1800 seconds = 30 minutes)
-        const accessToken = jwt.sign({ mobile: key }, JWT_SECRET, { expiresIn: "180000s" });
-        return accessToken;
-    }
+    .post(
+      "/admin/add-category",
+      [
+        //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
+      ],
+      authenticateToken,
+      AdminController.add_category
+    )
 
-    function authenticateToken(req, res, next) {
-        next();
-        //const JWT_SECRET = process.env.JWT_SECRET;
-        // Gather the jwt access token from the request header
-        //const authHeader = req.headers["authorization"];
-        //const token = authHeader && authHeader.split(" ")[0];
-        //console.log(authHeader.split(' '));
-        // if (token == null) return res.sendStatus(200); // if there isn't any token
+    .post("/admin/category-list", [], authenticateToken, AdminController.category_list)
 
-        // jwt.verify(token, JWT_SECRET, (err, mobile) => {
-        //     if (err) return res.sendStatus(200);
-        //     req.token = generateAccessToken(mobile);
-        //     next(); // pass the execution off to whatever request the client intended
-        // });
-    }
+    .post("/admin/update-category-status", [], authenticateToken, AdminController.update_category_status)
 
-    app
+    .post("/admin/get-single-category", [], authenticateToken, AdminController.get_category)
 
-        /// User Start ////
+    .post(
+      "/admin/delete-category",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter category id")],
+      authenticateToken,
+      AdminController.delete_category
+    )
 
-        .post("/admin/login", [check("email").trim().isLength({ min: 1 }).withMessage("Enter email address"), check("password").trim().isLength({ min: 1 }).withMessage("Enter password")], AdminController.login)
+    .post("/admin/update-category", [], authenticateToken, AdminController.update_category)
 
-        .post("/admin/create-user", [check("full_name").trim().isLength({ min: 1 }).withMessage("Enter name"), check("email").trim().isLength({ min: 1 }).withMessage("Enter email address"), check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile number"), check("password").trim().isLength({ min: 1 }).withMessage("Enter password"), check("user_type").trim().isLength({ min: 1 }).withMessage("Enter user type")], authenticateToken, AdminController.create_user)
+    /// Category End ////
 
-        .post("/admin/user-list", [], authenticateToken, AdminController.user_list)
+    /// Brand Start ////
 
-        .post("/admin/update-user-status", [], authenticateToken, AdminController.update_user_status)
+    .post(
+      "/admin/add-brand",
+      [
+        //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
+      ],
+      authenticateToken,
+      AdminController.add_brand
+    )
 
-        .post("/admin/send-email-otp", [check("email").trim().isLength({ min: 1 }).withMessage("Enter email address")], AdminController.send_email_otp)
+    .post("/admin/brand-list", [], authenticateToken, AdminController.brand_list)
 
-        .post("/admin/login-with-otp", [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile number"), check("otp").trim().isLength({ min: 1 }).withMessage("Enter OTP")], AdminController.otp_login)
+    .post("/admin/update-brand-status", [], authenticateToken, AdminController.update_brand_status)
 
-        .post("/admin/reset-password", [check("email").trim().isLength({ min: 1 }).withMessage("Enter email address")], AdminController.reset_password)
+    .post("/admin/update-brand", [], authenticateToken, AdminController.update_brand)
 
-        .post("/admin/chnage-password", [check("email").trim().isLength({ min: 1 }).withMessage("Enter email address"), check("otp").trim().isLength({ min: 1 }).withMessage("Enter OTP"), check("password").trim().isLength({ min: 1 }).withMessage("Enter password")], AdminController.chnage_password)
+    .post("/admin/get-single-brand", [], authenticateToken, AdminController.get_brand)
 
-        .post("/admin/get-profile", [], authenticateToken, AdminController.get_profile)
+    .post(
+      "/admin/delete-brand",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter brand id")],
+      authenticateToken,
+      AdminController.delete_brand
+    )
 
-        .post("/admin/update-profile", [check("id").trim().isLength({ min: 1 }).withMessage("Enter id"), check("full_name").trim().isLength({ min: 1 }).withMessage("Enter name")], authenticateToken, AdminController.update_profile)
+    /// Brand End ////
 
-        .post("/admin/delete-user", [check("id").trim().isLength({ min: 1 }).withMessage("Enter user id")], authenticateToken, AdminController.delete_user)
+    /// Vendor Start ////
 
-        .post("/admin/update-profile-image", [check("id").trim().isLength({ min: 1 }).withMessage("Enter id")], authenticateToken, AdminController.update_profile_image)
-        ///// Users End ///////
+    .post(
+      "/admin/add-vendor",
+      [
+        //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
+      ],
+      authenticateToken,
+      AdminController.add_vendor
+    )
 
-        /// City Start ///
+    .post("/admin/vendor-list", [], authenticateToken, AdminController.vendor_list)
 
-        .post(
-            "/admin/create-city",
-            [
-                //check('name').trim().isLength({ min: 1 }).withMessage('Enter city name')
-            ],
-            authenticateToken,
-            AdminController.create_city
-        )
+    .post("/admin/update-vendor-status", [], authenticateToken, AdminController.update_vendor_status)
 
-        .post("/admin/city-list", [], authenticateToken, AdminController.city_list)
+    .post("/admin/update-vendor", [], authenticateToken, AdminController.update_vendor)
 
-        .post("/admin/update-city-status", [], authenticateToken, AdminController.update_city_status)
+    .post("/admin/get-single-vendor", [], authenticateToken, AdminController.get_vendor)
 
-        .post("/admin/update-city-status-default", [], authenticateToken, AdminController.update_city_status_default)
+    .post(
+      "/admin/delete-vendor",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter vendor id")],
+      authenticateToken,
+      AdminController.delete_vendor
+    )
 
-        .post("/admin/update-city-footer-status", [], authenticateToken, AdminController.update_city_footer_status)
+    /// Vendor End ////
 
-        .post("/admin/get-single-city", [], authenticateToken, AdminController.get_city)
+    ///// Settings Start ////////
+    .post("/admin/settings-list", [], authenticateToken, AdminController.settings_list)
 
-        .post(
-            "/admin/update-city",
-            [
-                // check('id').trim().isLength({ min: 1 }).withMessage('Enter city id'),
-                //check('name').trim().isLength({ min: 1 }).withMessage('Enter city name'),
-            ],
-            authenticateToken,
-            AdminController.update_city
-        )
+    .post("/admin/app-settings-list", [], authenticateToken, AdminController.app_settings_list)
 
-        .post("/admin/delete-city", [check("id").trim().isLength({ min: 1 }).withMessage("Enter city id")], authenticateToken, AdminController.delete_city)
+    .post("/admin/get-settings", [], authenticateToken, AdminController.get_settings)
 
-        /// City End ///
+    .post("/admin/update-settings", [], authenticateToken, AdminController.update_settings)
 
-        /// Zip code Start ///
+    .post("/admin/update-app-settings", [], authenticateToken, AdminController.update_app_settings)
 
-        .post("/admin/all-city-list", [], authenticateToken, AdminController.all_city_list)
+    .get("/admin/settings", [], AdminController.settings)
 
-        .post("/admin/create-zipcode", [check("name").trim().isLength({ min: 1 }).withMessage("Enter city name"), check("city").trim().isLength({ min: 1 }).withMessage("Select city")], authenticateToken, AdminController.create_zipcode)
+    /////// Settings End /////////
 
-        .post("/admin/zipcode-list", [], authenticateToken, AdminController.zipcode_list)
+    /// Product Start ////
 
-        .post("/admin/update-zipcode-status", [], authenticateToken, AdminController.update_zipcode_status)
+    .post("/admin/parent-category-list", [], authenticateToken, AdminController.parent_category_list)
 
-        .post("/admin/get-single-zipcode", [], authenticateToken, AdminController.get_zipcode)
+    .post(
+      "/admin/sub-category-list",
 
-        .post("/admin/update-zipcode", [check("id").trim().isLength({ min: 1 }).withMessage("Enter zipcode id"), check("name").trim().isLength({ min: 1 }).withMessage("Enter zipcode name"), check("city").trim().isLength({ min: 1 }).withMessage("Select city")], authenticateToken, AdminController.update_zipcode)
+      authenticateToken,
+      AdminController.sub_category_list
+    )
 
-        .post("/admin/delete-zipcode", [check("id").trim().isLength({ min: 1 }).withMessage("Enter zipcode id")], authenticateToken, AdminController.delete_zipcode)
+    .post(
+      "/admin/add-product",
+      [
+        //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
+      ],
+      authenticateToken,
+      AdminController.add_product
+    )
 
-        /// Zip code End ///
+    .post("/admin/product-list", [], authenticateToken, AdminController.product_list)
 
-        /// Cusine Start ///
+    .post(
+      "/admin/update-product-status",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter product id")],
+      authenticateToken,
+      AdminController.update_product_status
+    )
 
-        .post("/admin/create-cuisine", [check("name").trim().isLength({ min: 1 }).withMessage("Enter cuisine name")], authenticateToken, AdminController.create_cuisine)
+    .post("/admin/get-single-product", [], authenticateToken, AdminController.get_product)
 
-        .post("/admin/cuisine-list", [], authenticateToken, AdminController.cuisine_list)
+    .post(
+      "/admin/delete-product",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter product id")],
+      authenticateToken,
+      AdminController.delete_product
+    )
 
-        .post("/admin/update-cuisine-status", [], authenticateToken, AdminController.update_cuisine_status)
+    .post("/admin/update-product", [], authenticateToken, AdminController.update_product)
 
-        .post("/admin/get-single-cuisine", [], authenticateToken, AdminController.get_cuisine)
+    .post("/admin/all-product-list", [], authenticateToken, AdminController.all_product_list)
 
-        .post("/admin/update-cuisine", [check("id").trim().isLength({ min: 1 }).withMessage("Enter cuisine id"), check("name").trim().isLength({ min: 1 }).withMessage("Enter cuisine name")], authenticateToken, AdminController.update_cuisine)
+    .post("/admin/all-cuisine-list", [], authenticateToken, AdminController.all_cuisine_list)
 
-        .post("/admin/delete-cuisine", [check("id").trim().isLength({ min: 1 }).withMessage("Enter cuisine id")], authenticateToken, AdminController.delete_cuisine)
+    .post("/admin/all-brand-list", [], authenticateToken, AdminController.all_brand_list)
 
-        /// Cusine End ///
+    .post("/admin/all-vendor-list", [], authenticateToken, AdminController.all_vendor_list)
 
-        /// Category Start ////
+    .post("/admin/delete-product-image", [], authenticateToken, AdminController.delete_product_image)
 
-        .post("/admin/parent-category-list", [], authenticateToken, AdminController.parent_category_list)
+    /// Product End ////
 
-        .post(
-            "/admin/add-category",
-            [
-                //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
-            ],
-            authenticateToken,
-            AdminController.add_category
-        )
+    /// Pickup Partner Start ////
 
-        .post("/admin/category-list", [], authenticateToken, AdminController.category_list)
+    .post(
+      "/admin/add-pickup-partner",
+      [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile")],
+      authenticateToken,
+      AdminController.add_pickup_partner
+    )
 
-        .post("/admin/update-category-status", [], authenticateToken, AdminController.update_category_status)
+    .post("/admin/pickup-partner-list", [], authenticateToken, AdminController.pickup_partner_list)
 
-        .post("/admin/get-single-category", [], authenticateToken, AdminController.get_category)
+    .post("/admin/update-pickup-partner-status", [], authenticateToken, AdminController.update_pickup_partner_status)
 
-        .post("/admin/delete-category", [check("id").trim().isLength({ min: 1 }).withMessage("Enter category id")], authenticateToken, AdminController.delete_category)
+    .post(
+      "/admin/update-pickup-partner",
+      [
+        // check('first_name').trim().isLength({ min: 1 }).withMessage('Enter first_name'),
+        // check('last_name').trim().isLength({ min: 1 }).withMessage('Enter last_name'),
+        check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile"),
+        check("id").trim().isLength({ min: 1 }).withMessage("Enter pickup partner id"),
+      ],
+      authenticateToken,
+      AdminController.update_pickup_partner
+    )
 
-        .post("/admin/update-category", [], authenticateToken, AdminController.update_category)
+    .post("/admin/get-single-pickup-partner", [], authenticateToken, AdminController.get_pickup_partner)
 
-        /// Category End ////
+    .post(
+      "/admin/delete-pickup-partner",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter pickup partner id")],
+      authenticateToken,
+      AdminController.delete_pickup_partner
+    )
 
-        /// Brand Start ////
+    /// Pickup Partner End ////
 
-        .post(
-            "/admin/add-brand",
-            [
-                //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
-            ],
-            authenticateToken,
-            AdminController.add_brand
-        )
+    /// Cargo Partner Start ////
 
-        .post("/admin/brand-list", [], authenticateToken, AdminController.brand_list)
+    .post(
+      "/admin/add-cargo-partner",
+      [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile")],
+      authenticateToken,
+      AdminController.add_cargo_partner
+    )
 
-        .post("/admin/update-brand-status", [], authenticateToken, AdminController.update_brand_status)
+    .post("/admin/cargo-partner-list", [], authenticateToken, AdminController.cargo_partner_list)
 
-        .post("/admin/update-brand", [], authenticateToken, AdminController.update_brand)
+    .post("/admin/update-cargo-partner-status", [], authenticateToken, AdminController.update_cargo_partner_status)
 
-        .post("/admin/get-single-brand", [], authenticateToken, AdminController.get_brand)
+    .post(
+      "/admin/update-cargo-partner",
+      [
+        check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile"),
+        check("id").trim().isLength({ min: 1 }).withMessage("Enter cargo partner id"),
+      ],
+      authenticateToken,
+      AdminController.update_cargo_partner
+    )
 
-        .post("/admin/delete-brand", [check("id").trim().isLength({ min: 1 }).withMessage("Enter brand id")], authenticateToken, AdminController.delete_brand)
+    .post("/admin/get-single-cargo-partner", [], authenticateToken, AdminController.get_cargo_partner)
 
-        /// Brand End ////
+    .post(
+      "/admin/delete-cargo-partner",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter cargo partner id")],
+      authenticateToken,
+      AdminController.delete_cargo_partner
+    )
 
-        /// Vendor Start ////
+    /// Cargo Partner End ////
 
-        .post(
-            "/admin/add-vendor",
-            [
-                //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
-            ],
-            authenticateToken,
-            AdminController.add_vendor
-        )
+    /// Cargo Partner Start ////
 
-        .post("/admin/vendor-list", [], authenticateToken, AdminController.vendor_list)
+    .post(
+      "/admin/add-delivery-partner",
+      [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile")],
+      authenticateToken,
+      AdminController.add_delivery_partner
+    )
 
-        .post("/admin/update-vendor-status", [], authenticateToken, AdminController.update_vendor_status)
+    .post("/admin/delivery-partner-list", [], authenticateToken, AdminController.delivery_partner_list)
 
-        .post("/admin/update-vendor", [], authenticateToken, AdminController.update_vendor)
+    .post(
+      "/admin/update-delivery-partner-status",
+      [],
+      authenticateToken,
+      AdminController.update_delivery_partner_status
+    )
 
-        .post("/admin/get-single-vendor", [], authenticateToken, AdminController.get_vendor)
+    .post(
+      "/admin/update-delivery-partner",
+      [
+        check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile"),
+        check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery partner id"),
+      ],
+      authenticateToken,
+      AdminController.update_delivery_partner
+    )
 
-        .post("/admin/delete-vendor", [check("id").trim().isLength({ min: 1 }).withMessage("Enter vendor id")], authenticateToken, AdminController.delete_vendor)
+    .post("/admin/get-single-delivery-partner", [], authenticateToken, AdminController.get_delivery_partner)
 
-        /// Vendor End ////
+    .post(
+      "/admin/delete-delivery-partner",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery partner id")],
+      authenticateToken,
+      AdminController.delete_delivery_partner
+    )
 
-        ///// Settings Start ////////
-        .post("/admin/settings-list", [], authenticateToken, AdminController.settings_list)
+    /// Cargo Partner End ////
 
-        .post("/admin/app-settings-list", [], authenticateToken, AdminController.app_settings_list)
+    /// Cut off time Start ////
 
-        .post("/admin/get-settings", [], authenticateToken, AdminController.get_settings)
+    .post(
+      "/admin/add-cutoff-time",
+      [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile")],
+      authenticateToken,
+      AdminController.add_cutoff_time
+    )
 
-        .post("/admin/update-settings", [], authenticateToken, AdminController.update_settings)
+    .post("/admin/cutoff-time-list", [], authenticateToken, AdminController.cutoff_time_list)
 
-        .post("/admin/update-app-settings", [], authenticateToken, AdminController.update_app_settings)
+    .post("/admin/update-cutoff-time-status", [], authenticateToken, AdminController.update_cutoff_time_status)
 
-        .get("/admin/settings", [], AdminController.settings)
+    .post(
+      "/admin/update-cutoff-time",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery partner id")],
+      authenticateToken,
+      AdminController.update_cutoff_time
+    )
 
-        /////// Settings End /////////
+    .post("/admin/get-single-cutoff-time", [], authenticateToken, AdminController.get_cutoff_time)
 
-        /// Product Start ////
+    .post(
+      "/admin/delete-cutoff-time",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery partner id")],
+      authenticateToken,
+      AdminController.delete_cutoff_time
+    )
 
-        .post("/admin/parent-category-list", [], authenticateToken, AdminController.parent_category_list)
+    /// Cut off time End ////
 
-        .post(
-            "/admin/sub-category-list",
+    /// Slider Start ////
 
-            authenticateToken,
-            AdminController.sub_category_list
-        )
+    .post(
+      "/admin/add-slider",
+      [
+        //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
+      ],
+      authenticateToken,
+      AdminController.add_slider
+    )
 
-        .post(
-            "/admin/add-product",
-            [
-                //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
-            ],
-            authenticateToken,
-            AdminController.add_product
-        )
+    .post("/admin/slider-list", [], authenticateToken, AdminController.slider_list)
 
-        .post("/admin/product-list", [], authenticateToken, AdminController.product_list)
+    .post("/admin/update-slider-status", [], authenticateToken, AdminController.update_slider_status)
 
-        .post("/admin/update-product-status", [check("id").trim().isLength({ min: 1 }).withMessage("Enter product id")], authenticateToken, AdminController.update_product_status)
+    .post("/admin/update-slider", [], authenticateToken, AdminController.update_slider)
 
-        .post("/admin/get-single-product", [], authenticateToken, AdminController.get_product)
+    .post("/admin/get-single-slider", [], authenticateToken, AdminController.get_slider)
 
-        .post("/admin/delete-product", [check("id").trim().isLength({ min: 1 }).withMessage("Enter product id")], authenticateToken, AdminController.delete_product)
+    .post(
+      "/admin/delete-slider",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter slider id")],
+      authenticateToken,
+      AdminController.delete_slider
+    )
 
-        .post("/admin/update-product", [], authenticateToken, AdminController.update_product)
+    /// Slider End ////
 
-        .post("/admin/all-product-list", [], authenticateToken, AdminController.all_product_list)
+    /// Mobile Category Start ////
 
-        .post("/admin/all-cuisine-list", [], authenticateToken, AdminController.all_cuisine_list)
+    .post("/admin/mobile-category-list", [], authenticateToken, AdminController.mobile_category_list)
 
-        .post("/admin/all-brand-list", [], authenticateToken, AdminController.all_brand_list)
+    .post("/admin/update-category-slider", [], authenticateToken, AdminController.update_mobile_category)
 
-        .post("/admin/all-vendor-list", [], authenticateToken, AdminController.all_vendor_list)
+    .post("/admin/get-single-category-slider", [], authenticateToken, AdminController.get_mobile_category)
 
-        .post("/admin/delete-product-image", [], authenticateToken, AdminController.delete_product_image)
+    /// Mobile Category End ////
 
-        /// Product End ////
+    /// Product Type Start ////
 
-        /// Pickup Partner Start ////
+    .post(
+      "/admin/add-product-type",
+      [
+        //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
+      ],
+      authenticateToken,
+      AdminController.add_product_type
+    )
 
-        .post("/admin/add-pickup-partner", [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile")], authenticateToken, AdminController.add_pickup_partner)
+    .post("/admin/product-type-list", [], authenticateToken, AdminController.product_type_list)
 
-        .post("/admin/pickup-partner-list", [], authenticateToken, AdminController.pickup_partner_list)
+    .post("/admin/update-product-type-status", [], authenticateToken, AdminController.update_product_type_status)
 
-        .post("/admin/update-pickup-partner-status", [], authenticateToken, AdminController.update_pickup_partner_status)
+    .post("/admin/update-product-type", [], authenticateToken, AdminController.update_product_type)
 
-        .post(
-            "/admin/update-pickup-partner",
-            [
-                // check('first_name').trim().isLength({ min: 1 }).withMessage('Enter first_name'),
-                // check('last_name').trim().isLength({ min: 1 }).withMessage('Enter last_name'),
-                check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile"),
-                check("id").trim().isLength({ min: 1 }).withMessage("Enter pickup partner id"),
-            ],
-            authenticateToken,
-            AdminController.update_pickup_partner
-        )
+    .post("/admin/get-single-product-type", [], authenticateToken, AdminController.get_product_type)
 
-        .post("/admin/get-single-pickup-partner", [], authenticateToken, AdminController.get_pickup_partner)
+    .post("/admin/all-product-type-list", [], authenticateToken, AdminController.all_product_type_list)
 
-        .post("/admin/delete-pickup-partner", [check("id").trim().isLength({ min: 1 }).withMessage("Enter pickup partner id")], authenticateToken, AdminController.delete_pickup_partner)
+    .post(
+      "/admin/delete-product-type",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter product type id")],
+      authenticateToken,
+      AdminController.delete_product_type
+    )
 
-        /// Pickup Partner End ////
+    /// Product Type End ////
 
-        /// Cargo Partner Start ////
+    /// Coupon Start ////
 
-        .post("/admin/add-cargo-partner", [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile")], authenticateToken, AdminController.add_cargo_partner)
+    .post("/admin/add-coupon", [], authenticateToken, AdminController.add_coupon)
 
-        .post("/admin/cargo-partner-list", [], authenticateToken, AdminController.cargo_partner_list)
+    .post("/admin/coupon-list", [], authenticateToken, AdminController.coupon_list)
 
-        .post("/admin/update-cargo-partner-status", [], authenticateToken, AdminController.update_cargo_partner_status)
+    .post("/admin/update-coupon-status", [], authenticateToken, AdminController.update_coupon_status)
 
-        .post("/admin/update-cargo-partner", [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile"), check("id").trim().isLength({ min: 1 }).withMessage("Enter cargo partner id")], authenticateToken, AdminController.update_cargo_partner)
+    .post("/admin/update-coupon", [], authenticateToken, AdminController.update_coupon)
 
-        .post("/admin/get-single-cargo-partner", [], authenticateToken, AdminController.get_cargo_partner)
+    .post("/admin/get-single-coupon", [], authenticateToken, AdminController.get_coupon)
 
-        .post("/admin/delete-cargo-partner", [check("id").trim().isLength({ min: 1 }).withMessage("Enter cargo partner id")], authenticateToken, AdminController.delete_cargo_partner)
+    .post(
+      "/admin/delete-coupon",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery partner id")],
+      authenticateToken,
+      AdminController.delete_coupon
+    )
 
-        /// Cargo Partner End ////
+    /// Coupon End ////
 
-        /// Cargo Partner Start ////
+    /// LP Head Start ///
 
-        .post("/admin/add-delivery-partner", [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile")], authenticateToken, AdminController.add_delivery_partner)
+    .post("/admin/add-lp-head", [], authenticateToken, AdminController.add_lp_head)
 
-        .post("/admin/delivery-partner-list", [], authenticateToken, AdminController.delivery_partner_list)
+    .post("/admin/lp-head-list", [], authenticateToken, AdminController.lp_head_list)
 
-        .post("/admin/update-delivery-partner-status", [], authenticateToken, AdminController.update_delivery_partner_status)
+    .post("/admin/update-lp-head-status", [], authenticateToken, AdminController.update_lp_head_status)
 
-        .post("/admin/update-delivery-partner", [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile"), check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery partner id")], authenticateToken, AdminController.update_delivery_partner)
+    .post("/admin/update-lp-head", [], authenticateToken, AdminController.update_lp_head)
 
-        .post("/admin/get-single-delivery-partner", [], authenticateToken, AdminController.get_delivery_partner)
+    .post("/admin/get-single-lp-head", [], authenticateToken, AdminController.get_lp_head)
 
-        .post("/admin/delete-delivery-partner", [check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery partner id")], authenticateToken, AdminController.delete_delivery_partner)
+    .post(
+      "/admin/delete-li-head",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter vendor id")],
+      authenticateToken,
+      AdminController.delete_lp_head
+    )
 
-        /// Cargo Partner End ////
+    /// LP Head End ///
 
-        /// Cut off time Start ////
+    /// LP Head Start ///
 
-        .post("/admin/add-cutoff-time", [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile")], authenticateToken, AdminController.add_cutoff_time)
+    .post("/admin/add-lp-manager", [], authenticateToken, AdminController.add_lp_manager)
 
-        .post("/admin/cutoff-time-list", [], authenticateToken, AdminController.cutoff_time_list)
+    .post("/admin/lp-manager-list", [], authenticateToken, AdminController.lp_manager_list)
 
-        .post("/admin/update-cutoff-time-status", [], authenticateToken, AdminController.update_cutoff_time_status)
+    .post("/admin/update-lp-manager-status", [], authenticateToken, AdminController.update_lp_manager_status)
 
-        .post("/admin/update-cutoff-time", [check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery partner id")], authenticateToken, AdminController.update_cutoff_time)
+    .post("/admin/update-lp-manager", [], authenticateToken, AdminController.update_lp_manager)
 
-        .post("/admin/get-single-cutoff-time", [], authenticateToken, AdminController.get_cutoff_time)
+    .post("/admin/get-single-lp-manager", [], authenticateToken, AdminController.get_lp_manager)
 
-        .post("/admin/delete-cutoff-time", [check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery partner id")], authenticateToken, AdminController.delete_cutoff_time)
+    .post("/admin/delete-li-manager", [], authenticateToken, AdminController.delete_lp_manager)
 
-        /// Cut off time End ////
+    /// LP Head End ///
 
-        /// Slider Start ////
+    /// Pickup Boy Start ////
 
-        .post(
-            "/admin/add-slider",
-            [
-                //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
-            ],
-            authenticateToken,
-            AdminController.add_slider
-        )
+    .post("/admin/all-delivery-partner-list", [], authenticateToken, AdminController.all_delivery_partner_list)
 
-        .post("/admin/slider-list", [], authenticateToken, AdminController.slider_list)
+    .post("/admin/all-pickup-partner-list", [], authenticateToken, AdminController.all_pickup_partner_list)
 
-        .post("/admin/update-slider-status", [], authenticateToken, AdminController.update_slider_status)
+    .post(
+      "/admin/add-pickup-boy",
+      [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile")],
+      authenticateToken,
+      AdminController.add_pickup_boy
+    )
 
-        .post("/admin/update-slider", [], authenticateToken, AdminController.update_slider)
+    .post("/admin/pickup-boy-list", [], authenticateToken, AdminController.pickup_boy_list)
 
-        .post("/admin/get-single-slider", [], authenticateToken, AdminController.get_slider)
+    .post("/admin/update-pickup-boy-status", [], authenticateToken, AdminController.update_pickup_boy_status)
 
-        .post("/admin/delete-slider", [check("id").trim().isLength({ min: 1 }).withMessage("Enter slider id")], authenticateToken, AdminController.delete_slider)
+    .post(
+      "/admin/update-pickup-boy",
+      [
+        check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile"),
+        check("id").trim().isLength({ min: 1 }).withMessage("Enter pickup boy id"),
+      ],
+      authenticateToken,
+      AdminController.update_pickup_boy
+    )
 
-        /// Slider End ////
+    .post("/admin/get-single-pickup-boy", [], authenticateToken, AdminController.get_pickup_boy)
 
-        /// Mobile Category Start ////
+    .post(
+      "/admin/delete-pickup-boy",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter pickup boy id")],
+      authenticateToken,
+      AdminController.delete_pickup_boy
+    )
 
-        .post("/admin/mobile-category-list", [], authenticateToken, AdminController.mobile_category_list)
+    /// Pickup Boy End ////
 
-        .post("/admin/update-category-slider", [], authenticateToken, AdminController.update_mobile_category)
+    /// Pickup Boy Start ////
 
-        .post("/admin/get-single-category-slider", [], authenticateToken, AdminController.get_mobile_category)
+    .post(
+      "/admin/add-delivery-boy",
+      [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile")],
+      authenticateToken,
+      AdminController.add_delivery_boy
+    )
 
-        /// Mobile Category End ////
+    .post("/admin/delivery-boy-list", [], authenticateToken, AdminController.delivery_boy_list)
 
-        /// Product Type Start ////
+    .post("/admin/update-delivery-boy-status", [], authenticateToken, AdminController.update_delivery_boy_status)
 
-        .post(
-            "/admin/add-product-type",
-            [
-                //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
-            ],
-            authenticateToken,
-            AdminController.add_product_type
-        )
+    .post(
+      "/admin/update-delivery-boy",
+      [
+        check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile"),
+        check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery boy id"),
+      ],
+      authenticateToken,
+      AdminController.update_delivery_boy
+    )
 
-        .post("/admin/product-type-list", [], authenticateToken, AdminController.product_type_list)
+    .post("/admin/get-single-delivery-boy", [], authenticateToken, AdminController.get_delivery_boy)
 
-        .post("/admin/update-product-type-status", [], authenticateToken, AdminController.update_product_type_status)
+    .post(
+      "/admin/delete-delivery-boy",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery boy id")],
+      authenticateToken,
+      AdminController.delete_delivery_boy
+    )
 
-        .post("/admin/update-product-type", [], authenticateToken, AdminController.update_product_type)
+    /// Pickup Boy End ////
 
-        .post("/admin/get-single-product-type", [], authenticateToken, AdminController.get_product_type)
+    /// Review Start ////
+    .post("/admin/review-list", [], authenticateToken, AdminController.review_list)
 
-        .post("/admin/all-product-type-list", [], authenticateToken, AdminController.all_product_type_list)
+    .post("/admin/update-review-status", [], authenticateToken, AdminController.update_review_status)
 
-        .post("/admin/delete-product-type", [check("id").trim().isLength({ min: 1 }).withMessage("Enter product type id")], authenticateToken, AdminController.delete_product_type)
+    .post(
+      "/admin/delete-review",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter review id")],
+      authenticateToken,
+      AdminController.delete_review
+    )
+    /// Review End ////
 
-        /// Product Type End ////
+    .post("/admin/lp-list", [], authenticateToken, AdminController.lp_list)
 
-        /// Coupon Start ////
+    .post("/admin/delivery-list", [], authenticateToken, AdminController.delivery_list)
 
-        .post("/admin/add-coupon", [], authenticateToken, AdminController.add_coupon)
+    /// Admin User Start ////
 
-        .post("/admin/coupon-list", [], authenticateToken, AdminController.coupon_list)
+    .post(
+      "/admin/add-user",
+      [
+        //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
+      ],
+      authenticateToken,
+      AdminController.add_user
+    )
 
-        .post("/admin/update-coupon-status", [], authenticateToken, AdminController.update_coupon_status)
+    .post("/admin/vendor-list", [], authenticateToken, AdminController.vendor_list)
 
-        .post("/admin/update-coupon", [], authenticateToken, AdminController.update_coupon)
+    .post("/admin/update-vendor-status", [], authenticateToken, AdminController.update_vendor_status)
 
-        .post("/admin/get-single-coupon", [], authenticateToken, AdminController.get_coupon)
+    .post("/admin/update-vendor", [], authenticateToken, AdminController.update_vendor)
 
-        .post("/admin/delete-coupon", [check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery partner id")], authenticateToken, AdminController.delete_coupon)
+    .post("/admin/get-single-vendor", [], authenticateToken, AdminController.get_vendor)
 
-        /// Coupon End ////
+    .post(
+      "/admin/delete-vendor",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter vendor id")],
+      authenticateToken,
+      AdminController.delete_vendor
+    )
 
-        /// LP Head Start ///
+    /// Admin User End ////
 
-        .post("/admin/add-lp-head", [], authenticateToken, AdminController.add_lp_head)
+    .post("/admin/get-user-data", [], authenticateToken, AdminController.get_user_data)
 
-        .post("/admin/lp-head-list", [], authenticateToken, AdminController.lp_head_list)
+    .post("/admin/all-brand-list", [], authenticateToken, AdminController.all_brand_list)
 
-        .post("/admin/update-lp-head-status", [], authenticateToken, AdminController.update_lp_head_status)
+    .post("/admin/all-category-list", [], authenticateToken, AdminController.all_category_list)
 
-        .post("/admin/update-lp-head", [], authenticateToken, AdminController.update_lp_head)
+    .post("/admin/all-product-list", [], authenticateToken, AdminController.all_product_list)
 
-        .post("/admin/get-single-lp-head", [], authenticateToken, AdminController.get_lp_head)
+    .post("/admin/all-customer-list", [], authenticateToken, AdminController.all_customer_list)
 
-        .post("/admin/delete-li-head", [check("id").trim().isLength({ min: 1 }).withMessage("Enter vendor id")], authenticateToken, AdminController.delete_lp_head)
+    /// Shipping Start ///
 
-        /// LP Head End ///
+    .post(
+      "/admin/create-shipping",
+      [check("name").trim().isLength({ min: 1 }).withMessage("Enter shipping name")],
+      authenticateToken,
+      AdminController.create_shipping
+    )
 
-        /// LP Head Start ///
+    .post("/admin/shipping-list", [], authenticateToken, AdminController.shipping_list)
 
-        .post("/admin/add-lp-manager", [], authenticateToken, AdminController.add_lp_manager)
+    .post("/admin/update-shipping-status", [], authenticateToken, AdminController.update_shipping_status)
 
-        .post("/admin/lp-manager-list", [], authenticateToken, AdminController.lp_manager_list)
+    .post("/admin/get-single-shipping", [], authenticateToken, AdminController.get_shipping)
 
-        .post("/admin/update-lp-manager-status", [], authenticateToken, AdminController.update_lp_manager_status)
+    .post(
+      "/admin/update-shipping",
+      [
+        check("id").trim().isLength({ min: 1 }).withMessage("Enter shipping id"),
+        check("name").trim().isLength({ min: 1 }).withMessage("Enter shipping name"),
+      ],
+      authenticateToken,
+      AdminController.update_shipping
+    )
 
-        .post("/admin/update-lp-manager", [], authenticateToken, AdminController.update_lp_manager)
+    .post(
+      "/admin/delete-shipping",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter shipping id")],
+      authenticateToken,
+      AdminController.delete_shipping
+    )
 
-        .post("/admin/get-single-lp-manager", [], authenticateToken, AdminController.get_lp_manager)
+    .post("/admin/all-shipping-class", [], authenticateToken, AdminController.all_shipping_class)
 
-        .post("/admin/delete-li-manager", [], authenticateToken, AdminController.delete_lp_manager)
+    /// Shipping End ///
 
-        /// LP Head End ///
+    .get("/admin/state-list", AdminController.state_list)
 
-        /// Pickup Boy Start ////
+    .post("/admin/update-customer-status", [], authenticateToken, AdminController.update_customer_status)
 
-        .post("/admin/all-delivery-partner-list", [], authenticateToken, AdminController.all_delivery_partner_list)
+    .post("/admin/customer-list", [], authenticateToken, AdminController.customer_list)
 
-        .post("/admin/all-pickup-partner-list", [], authenticateToken, AdminController.all_pickup_partner_list)
+    .post("/admin/order-list", [], authenticateToken, AdminController.order_list)
 
-        .post("/admin/add-pickup-boy", [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile")], authenticateToken, AdminController.add_pickup_boy)
+    .post("/admin/update-gateway-status", [], authenticateToken, AdminController.update_gateway)
 
-        .post("/admin/pickup-boy-list", [], authenticateToken, AdminController.pickup_boy_list)
+    .post("/admin/update-order-status", [], authenticateToken, AdminController.update_order_status)
 
-        .post("/admin/update-pickup-boy-status", [], authenticateToken, AdminController.update_pickup_boy_status)
+    .post("/admin/order-delete", [], authenticateToken, AdminController.order_delete)
 
-        .post("/admin/update-pickup-boy", [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile"), check("id").trim().isLength({ min: 1 }).withMessage("Enter pickup boy id")], authenticateToken, AdminController.update_pickup_boy)
+    .post("/admin/update-order-date", [], authenticateToken, AdminController.update_order_date)
 
-        .post("/admin/get-single-pickup-boy", [], authenticateToken, AdminController.get_pickup_boy)
+    .post("/admin/update-order-slot", [], authenticateToken, AdminController.update_order_slot)
 
-        .post("/admin/delete-pickup-boy", [check("id").trim().isLength({ min: 1 }).withMessage("Enter pickup boy id")], authenticateToken, AdminController.delete_pickup_boy)
+    .post("/admin/customer-address-list", [], authenticateToken, AdminController.customer_address_list)
 
-        /// Pickup Boy End ////
+    .post(
+      "/admin/update-customer",
+      [
+        check("id").trim().isLength({ min: 1 }).withMessage("Enter id"),
+        check("full_name").trim().isLength({ min: 1 }).withMessage("Enter name"),
+      ],
+      authenticateToken,
+      AdminController.update_customer
+    )
 
-        /// Pickup Boy Start ////
+    .post("/admin/update-customer-cod", [], authenticateToken, AdminController.update_customer_cod_status)
 
-        .post("/admin/add-delivery-boy", [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile")], authenticateToken, AdminController.add_delivery_boy)
+    .post("/admin/update-customer-order-status", [], authenticateToken, AdminController.update_customer_order_status)
 
-        .post("/admin/delivery-boy-list", [], authenticateToken, AdminController.delivery_boy_list)
+    .post("/admin/add_order_note", [], authenticateToken, AdminController.add_order_note)
 
-        .post("/admin/update-delivery-boy-status", [], authenticateToken, AdminController.update_delivery_boy_status)
+    .post("/admin/order_note_list", [], authenticateToken, AdminController.order_note_list)
 
-        .post("/admin/update-delivery-boy", [check("mobile").trim().isLength({ min: 1 }).withMessage("Enter mobile"), check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery boy id")], authenticateToken, AdminController.update_delivery_boy)
+    .get("/admin/approve_order_vendor", [], AdminController.approve_order_vendor)
 
-        .post("/admin/get-single-delivery-boy", [], authenticateToken, AdminController.get_delivery_boy)
+    .get("/admin/send_order_invoice", [], AdminController.send_order_invoice)
 
-        .post("/admin/delete-delivery-boy", [check("id").trim().isLength({ min: 1 }).withMessage("Enter delivery boy id")], authenticateToken, AdminController.delete_delivery_boy)
+    .post("/admin/bulk-order-list", [], authenticateToken, AdminController.bulk_order_list)
 
-        /// Pickup Boy End ////
+    .post("/admin/update-bulk-order-status", [], authenticateToken, AdminController.update_bulk_order_status)
 
-        /// Review Start ////
-        .post("/admin/review-list", [], authenticateToken, AdminController.review_list)
+    .post("/admin/send-otp", AdminController.send_otp)
+    .get("/admin/send_email_template", AdminController.send_email_template)
+    .post("/admin/get_map_data", AdminController.get_map_data)
 
-        .post("/admin/update-review-status", [], authenticateToken, AdminController.update_review_status)
+    .post(
+      "/admin/update-pickup-boy-status-login",
+      [],
+      authenticateToken,
+      AdminController.update_pickup_boy_status_login
+    )
 
-        .post("/admin/delete-review", [check("id").trim().isLength({ min: 1 }).withMessage("Enter review id")], authenticateToken, AdminController.delete_review)
-        /// Review End ////
+    .post(
+      "/admin/update-delivery-boy-status-login",
+      [],
+      authenticateToken,
+      AdminController.update_delivery_boy_status_login
+    )
 
-        .post("/admin/lp-list", [], authenticateToken, AdminController.lp_list)
+    .get("/admin/get_order_invoice", [], AdminController.get_order_invoice)
 
-        .post("/admin/delivery-list", [], authenticateToken, AdminController.delivery_list)
+    .get("/admin/partner_today_order_invoice", [], AdminController.partner_today_order_invoice)
 
-        /// Admin User Start ////
+    .get("/admin/partner_tomorrow_order_invoice", [], AdminController.partner_tomorrow_order_invoice)
 
-        .post(
-            "/admin/add-user",
-            [
-                //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
-            ],
-            authenticateToken,
-            AdminController.add_user
-        )
+    .get("/admin/partner_today_order_by_product_invoice", [], AdminController.partner_today_order_by_product_invoice)
 
-        .post("/admin/vendor-list", [], authenticateToken, AdminController.vendor_list)
+    .get(
+      "/admin/partner_tomorrow_order_by_product_invoice",
+      [],
+      AdminController.partner_tomorrow_order_by_product_invoice
+    )
 
-        .post("/admin/update-vendor-status", [], authenticateToken, AdminController.update_vendor_status)
+    /// State Start ///
 
-        .post("/admin/update-vendor", [], authenticateToken, AdminController.update_vendor)
+    .post("/admin/state-list-all", [], authenticateToken, AdminController.state_list_all)
 
-        .post("/admin/get-single-vendor", [], authenticateToken, AdminController.get_vendor)
+    .post("/admin/update-state-status", [], authenticateToken, AdminController.update_state_status)
 
-        .post("/admin/delete-vendor", [check("id").trim().isLength({ min: 1 }).withMessage("Enter vendor id")], authenticateToken, AdminController.delete_vendor)
+    /// State End ///
 
-        /// Admin User End ////
+    .post("/admin/upload_doc1", AdminController.upload_doc1)
+    .post("/admin/upload_doc2", AdminController.upload_doc2)
+    .post("/admin/upload_doc3", AdminController.upload_doc3)
+    .post("/admin/update-profile-image-2", AdminController.update_profile_image2)
 
-        .post("/admin/get-user-data", [], authenticateToken, AdminController.get_user_data)
+    .post("/admin/schedule-order-status", [], authenticateToken, AdminController.schedule_order_status)
 
-        .post("/admin/all-brand-list", [], authenticateToken, AdminController.all_brand_list)
+    .get("/admin/schedule-order-status-cron", [], AdminController.schedule_order_status_cron)
 
-        .post("/admin/all-category-list", [], authenticateToken, AdminController.all_category_list)
+    .post("/admin/create-holiday", [], authenticateToken, AdminController.create_holiday)
 
-        .post("/admin/all-product-list", [], authenticateToken, AdminController.all_product_list)
+    .post("/admin/brand-holiday", [], authenticateToken, AdminController.brand_holiday)
 
-        .post("/admin/all-customer-list", [], authenticateToken, AdminController.all_customer_list)
+    .post("/admin/delete-holiday", [], authenticateToken, AdminController.delete_holiday)
 
-        /// Shipping Start ///
+    .post("/admin/get_schedule", [], authenticateToken, AdminController.get_schedule)
 
-        .post("/admin/create-shipping", [check("name").trim().isLength({ min: 1 }).withMessage("Enter shipping name")], authenticateToken, AdminController.create_shipping)
+    .post("/admin/order-pdelete", [], authenticateToken, AdminController.order_pdelete)
 
-        .post("/admin/shipping-list", [], authenticateToken, AdminController.shipping_list)
+    .post("/admin/create-note", [], authenticateToken, AdminController.create_note)
 
-        .post("/admin/update-shipping-status", [], authenticateToken, AdminController.update_shipping_status)
+    .post("/admin/order-note", [], authenticateToken, AdminController.order_note)
 
-        .post("/admin/get-single-shipping", [], authenticateToken, AdminController.get_shipping)
+    .post("/admin/delete-order-note", [], authenticateToken, AdminController.delete_order_note)
 
-        .post("/admin/update-shipping", [check("id").trim().isLength({ min: 1 }).withMessage("Enter shipping id"), check("name").trim().isLength({ min: 1 }).withMessage("Enter shipping name")], authenticateToken, AdminController.update_shipping)
+    .post("/admin/financial-log", [], authenticateToken, AdminController.financial_log)
 
-        .post("/admin/delete-shipping", [check("id").trim().isLength({ min: 1 }).withMessage("Enter shipping id")], authenticateToken, AdminController.delete_shipping)
+    .post("/admin/update-log-status", [], authenticateToken, AdminController.update_log_status)
 
-        .post("/admin/all-shipping-class", [], authenticateToken, AdminController.all_shipping_class)
+    /// Manage Office Start //////
 
-        /// Shipping End ///
+    .post(
+      "/admin/create-office",
+      [
+        check("name").trim().isLength({ min: 1 }).withMessage("Enter office name"),
+        check("city").trim().isLength({ min: 1 }).withMessage("Select city name"),
+        check("address").trim().isLength({ min: 1 }).withMessage("Enter address"),
+        check("contact_person").trim().isLength({ min: 1 }).withMessage("Enter contact person"),
+        check("contact_person_email").trim().isLength({ min: 1 }).withMessage("Enter contact person email"),
+        check("contact_person_mobile").trim().isLength({ min: 1 }).withMessage("Enter contact person mobile"),
+      ],
+      authenticateToken,
+      AdminController.create_office
+    )
 
-        .get("/admin/state-list", AdminController.state_list)
+    .post("/admin/office-list", [], authenticateToken, AdminController.office_list)
 
-        .post("/admin/update-customer-status", [], authenticateToken, AdminController.update_customer_status)
+    .post("/admin/update-office-status", [], authenticateToken, AdminController.update_office_status)
 
-        .post("/admin/customer-list", [], authenticateToken, AdminController.customer_list)
+    .post("/admin/get-single-office", [], authenticateToken, AdminController.get_office)
 
-        .post("/admin/order-list", [], authenticateToken, AdminController.order_list)
+    .post(
+      "/admin/update-office",
+      [
+        check("id").trim().isLength({ min: 1 }).withMessage("Enter zipcode id"),
+        check("name").trim().isLength({ min: 1 }).withMessage("Enter office name"),
+        check("city").trim().isLength({ min: 1 }).withMessage("Select city name"),
+        check("address").trim().isLength({ min: 1 }).withMessage("Enter address"),
+        check("contact_person").trim().isLength({ min: 1 }).withMessage("Enter contact person"),
+        check("contact_person_email").trim().isLength({ min: 1 }).withMessage("Enter contact person email"),
+        check("contact_person_mobile").trim().isLength({ min: 1 }).withMessage("Enter contact person mobile"),
+      ],
+      authenticateToken,
+      AdminController.update_office
+    )
 
-        .post("/admin/update-gateway-status", [], authenticateToken, AdminController.update_gateway)
+    .post(
+      "/admin/delete-office",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter zipcode id")],
+      authenticateToken,
+      AdminController.delete_office
+    )
 
-        .post("/admin/update-order-status", [], authenticateToken, AdminController.update_order_status)
+    /// Magage Office Stop  //////
 
-        .post("/admin/order-delete", [], authenticateToken, AdminController.order_delete)
+    /// Unit Start //////
 
-        .post("/admin/update-order-date", [], authenticateToken, AdminController.update_order_date)
+    .post(
+      "/admin/create-unit",
+      [check("name").trim().isLength({ min: 1 }).withMessage("Enter office name")],
+      authenticateToken,
+      AdminController.create_unit
+    )
 
-        .post("/admin/update-order-slot", [], authenticateToken, AdminController.update_order_slot)
+    .post("/admin/unit-list", [], authenticateToken, AdminController.unit_list)
 
-        .post("/admin/customer-address-list", [], authenticateToken, AdminController.customer_address_list)
+    .post("/admin/get-single-unit", [], authenticateToken, AdminController.get_unit)
 
-        .post("/admin/update-customer", [check("id").trim().isLength({ min: 1 }).withMessage("Enter id"), check("full_name").trim().isLength({ min: 1 }).withMessage("Enter name")], authenticateToken, AdminController.update_customer)
+    .post(
+      "/admin/update-unit",
+      [
+        check("id").trim().isLength({ min: 1 }).withMessage("Enter unit id"),
+        check("name").trim().isLength({ min: 1 }).withMessage("Enter unit"),
+      ],
+      authenticateToken,
+      AdminController.update_unit
+    )
 
-        .post("/admin/update-customer-cod", [], authenticateToken, AdminController.update_customer_cod_status)
+    .post(
+      "/admin/delete-unit",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter unit id")],
+      authenticateToken,
+      AdminController.delete_unit
+    )
 
-        .post("/admin/update-customer-order-status", [], authenticateToken, AdminController.update_customer_order_status)
+    /// Unit Stop  //////
 
-        .post("/admin/add_order_note", [], authenticateToken, AdminController.add_order_note)
+    /// Manage Product Rate Start //////
 
-        .post("/admin/order_note_list", [], authenticateToken, AdminController.order_note_list)
+    .post(
+      "/admin/create-product-rate",
+      [
+        check("product").trim().isLength({ min: 1 }).withMessage("Enter product name"),
+        check("vendor").trim().isLength({ min: 1 }).withMessage("Select vendor name"),
+        check("unit").trim().isLength({ min: 1 }).withMessage("Enter unit"),
+        check("price").trim().isLength({ min: 1 }).withMessage("Enter price name"),
+      ],
+      authenticateToken,
+      AdminController.create_product_rate
+    )
 
-        .get("/admin/approve_order_vendor", [], AdminController.approve_order_vendor)
+    .post("/admin/product-rate-list", [], authenticateToken, AdminController.product_rate_list)
 
-        .get("/admin/send_order_invoice", [], AdminController.send_order_invoice)
+    .post("/admin/get-single-product-rate", [], authenticateToken, AdminController.get_product_rate)
 
-        .post("/admin/bulk-order-list", [], authenticateToken, AdminController.bulk_order_list)
+    .post(
+      "/admin/update-product-rate",
+      [
+        check("id").trim().isLength({ min: 1 }).withMessage("Enter zipcode id"),
+        check("product").trim().isLength({ min: 1 }).withMessage("Enter product name"),
+        check("vendor").trim().isLength({ min: 1 }).withMessage("Select vendor name"),
+        check("unit").trim().isLength({ min: 1 }).withMessage("Enter unit"),
+        check("price").trim().isLength({ min: 1 }).withMessage("Enter price name"),
+      ],
+      authenticateToken,
+      AdminController.update_product_rate
+    )
 
-        .post("/admin/update-bulk-order-status", [], authenticateToken, AdminController.update_bulk_order_status)
+    .post(
+      "/admin/delete-product-rate",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter rate id")],
+      authenticateToken,
+      AdminController.delete_product_rate
+    )
 
-        .post("/admin/send-otp", AdminController.send_otp)
-        .get("/admin/send_email_template", AdminController.send_email_template)
-        .post("/admin/get_map_data", AdminController.get_map_data)
+    .post("/admin/product-unit-list", [], authenticateToken, AdminController.product_unit_list)
 
-        .post("/admin/update-pickup-boy-status-login", [], authenticateToken, AdminController.update_pickup_boy_status_login)
+    .post("/admin/product-by-vendor", [], authenticateToken, AdminController.product_by_vendor)
 
-        .post("/admin/update-delivery-boy-status-login", [], authenticateToken, AdminController.update_delivery_boy_status_login)
+    /// Manage Product Rate Stop  //////
 
-        .get("/admin/get_order_invoice", [], AdminController.get_order_invoice)
+    /// Plan Start //////
 
-        .get("/admin/partner_today_order_invoice", [], AdminController.partner_today_order_invoice)
+    .post(
+      "/admin/create-plan",
+      [
+        check("name").trim().isLength({ min: 1 }).withMessage("Enter office name"),
+        check("price").trim().isLength({ min: 1 }).withMessage("Enter price"),
+        check("day").trim().isLength({ min: 1 }).withMessage("Enter day"),
+      ],
+      authenticateToken,
+      AdminController.create_plan
+    )
 
-        .get("/admin/partner_tomorrow_order_invoice", [], AdminController.partner_tomorrow_order_invoice)
+    .post("/admin/plan-list", [], authenticateToken, AdminController.plan_list)
 
-        .get("/admin/partner_today_order_by_product_invoice", [], AdminController.partner_today_order_by_product_invoice)
+    .post("/admin/update-plan-status", [], authenticateToken, AdminController.update_plan_status)
 
-        .get("/admin/partner_tomorrow_order_by_product_invoice", [], AdminController.partner_tomorrow_order_by_product_invoice)
+    .post("/admin/get-single-plan", [], authenticateToken, AdminController.get_plan)
 
-        /// State Start ///
+    .post(
+      "/admin/update-plan",
+      [
+        check("name").trim().isLength({ min: 1 }).withMessage("Enter office name"),
+        check("price").trim().isLength({ min: 1 }).withMessage("Enter price"),
+        check("day").trim().isLength({ min: 1 }).withMessage("Enter day"),
+      ],
+      authenticateToken,
+      AdminController.update_plan
+    )
 
-        .post("/admin/state-list-all", [], authenticateToken, AdminController.state_list_all)
+    .post(
+      "/admin/delete-plan",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter zipcode id")],
+      authenticateToken,
+      AdminController.delete_plan
+    )
 
-        .post("/admin/update-state-status", [], authenticateToken, AdminController.update_state_status)
+    /// Plan Stop  //////
 
-        /// State End ///
+    .post("/admin/check-stock", [], authenticateToken, AdminController.check_stock)
 
-        .post("/admin/upload_doc1", AdminController.upload_doc1)
-        .post("/admin/upload_doc2", AdminController.upload_doc2)
-        .post("/admin/upload_doc3", AdminController.upload_doc3)
-        .post("/admin/update-profile-image-2", AdminController.update_profile_image2)
+    .post("/admin/check-office-stock", [], authenticateToken, AdminController.check_office_stock)
 
-        .post("/admin/schedule-order-status", [], authenticateToken, AdminController.schedule_order_status)
+    /// Wallet Start ////
 
-        .get("/admin/schedule-order-status-cron", [], AdminController.schedule_order_status_cron)
+    .post("/admin/add-wallet", [], authenticateToken, AdminController.add_wallet)
 
-        .post("/admin/create-holiday", [], authenticateToken, AdminController.create_holiday)
+    .post("/admin/wallet-list", [], authenticateToken, AdminController.wallet_list)
 
-        .post("/admin/brand-holiday", [], authenticateToken, AdminController.brand_holiday)
+    .post(
+      "/admin/delete-wallet",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter wallet id")],
+      authenticateToken,
+      AdminController.delete_wallet
+    )
 
-        .post("/admin/delete-holiday", [], authenticateToken, AdminController.delete_holiday)
+    /// Wallet End ////
 
-        .post("/admin/get_schedule", [], authenticateToken, AdminController.get_schedule)
+    /// Stock Vendor Start ////
 
-        .post("/admin/order-pdelete", [], authenticateToken, AdminController.order_pdelete)
+    .post(
+      "/admin/add-vendor2",
+      [
+        //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
+      ],
+      authenticateToken,
+      AdminController.add_vendor2
+    )
 
-        .post("/admin/create-note", [], authenticateToken, AdminController.create_note)
+    .post("/admin/vendor2-list", [], authenticateToken, AdminController.vendor2_list)
 
-        .post("/admin/order-note", [], authenticateToken, AdminController.order_note)
+    .post("/admin/update-vendor2-status", [], authenticateToken, AdminController.update_vendor2_status)
 
-        .post("/admin/delete-order-note", [], authenticateToken, AdminController.delete_order_note)
+    .post("/admin/update-vendor2", [], authenticateToken, AdminController.update_vendor2)
 
-        .post("/admin/financial-log", [], authenticateToken, AdminController.financial_log)
+    .post("/admin/get-single-vendor2", [], authenticateToken, AdminController.get_vendor2)
 
-        .post("/admin/update-log-status", [], authenticateToken, AdminController.update_log_status)
+    .post(
+      "/admin/delete-vendor2",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter vendor2 id")],
+      authenticateToken,
+      AdminController.delete_vendor2
+    )
 
-        /// Manage Office Start //////
+    /// Stock Vendor End ////
 
-        .post("/admin/create-office", [check("name").trim().isLength({ min: 1 }).withMessage("Enter office name"), check("city").trim().isLength({ min: 1 }).withMessage("Select city name"), check("address").trim().isLength({ min: 1 }).withMessage("Enter address"), check("contact_person").trim().isLength({ min: 1 }).withMessage("Enter contact person"), check("contact_person_email").trim().isLength({ min: 1 }).withMessage("Enter contact person email"), check("contact_person_mobile").trim().isLength({ min: 1 }).withMessage("Enter contact person mobile")], authenticateToken, AdminController.create_office)
+    /// Stock Category Start ////
 
-        .post("/admin/office-list", [], authenticateToken, AdminController.office_list)
+    .post("/admin/parent-stock-category-list", [], authenticateToken, AdminController.parent_stock_category_list)
 
-        .post("/admin/update-office-status", [], authenticateToken, AdminController.update_office_status)
+    .post(
+      "/admin/add-stock-category",
+      [
+        //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
+      ],
+      authenticateToken,
+      AdminController.add_stock_category
+    )
 
-        .post("/admin/get-single-office", [], authenticateToken, AdminController.get_office)
+    .post("/admin/stock-category-list", [], authenticateToken, AdminController.stock_category_list)
 
-        .post("/admin/update-office", [check("id").trim().isLength({ min: 1 }).withMessage("Enter zipcode id"), check("name").trim().isLength({ min: 1 }).withMessage("Enter office name"), check("city").trim().isLength({ min: 1 }).withMessage("Select city name"), check("address").trim().isLength({ min: 1 }).withMessage("Enter address"), check("contact_person").trim().isLength({ min: 1 }).withMessage("Enter contact person"), check("contact_person_email").trim().isLength({ min: 1 }).withMessage("Enter contact person email"), check("contact_person_mobile").trim().isLength({ min: 1 }).withMessage("Enter contact person mobile")], authenticateToken, AdminController.update_office)
+    .post("/admin/update-stock-category-status", [], authenticateToken, AdminController.update_stock_category_status)
 
-        .post("/admin/delete-office", [check("id").trim().isLength({ min: 1 }).withMessage("Enter zipcode id")], authenticateToken, AdminController.delete_office)
+    .post("/admin/get-single-stock-category", [], authenticateToken, AdminController.get_stock_category)
 
-        /// Magage Office Stop  //////
+    .post(
+      "/admin/delete-stock-category",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter category id")],
+      authenticateToken,
+      AdminController.delete_stock_category
+    )
 
-        /// Unit Start //////
+    .post("/admin/update-stock-category", [], authenticateToken, AdminController.update_stock_category)
 
-        .post("/admin/create-unit", [check("name").trim().isLength({ min: 1 }).withMessage("Enter office name")], authenticateToken, AdminController.create_unit)
+    /// Stock Category End ////
 
-        .post("/admin/unit-list", [], authenticateToken, AdminController.unit_list)
+    /// Stock Product Start ////
 
-        .post("/admin/get-single-unit", [], authenticateToken, AdminController.get_unit)
+    .post(
+      "/admin/sub-stock-category-list",
+      [check("category_id").trim().isLength({ min: 1 }).withMessage("Enter parent category id")],
+      authenticateToken,
+      AdminController.sub_stock_category_list
+    )
 
-        .post("/admin/update-unit", [check("id").trim().isLength({ min: 1 }).withMessage("Enter unit id"), check("name").trim().isLength({ min: 1 }).withMessage("Enter unit")], authenticateToken, AdminController.update_unit)
+    .post("/admin/add-stock-product", [], authenticateToken, AdminController.add_stock_product)
 
-        .post("/admin/delete-unit", [check("id").trim().isLength({ min: 1 }).withMessage("Enter unit id")], authenticateToken, AdminController.delete_unit)
+    .post("/admin/stock-product-list", [], authenticateToken, AdminController.stock_product_list)
 
-        /// Unit Stop  //////
+    .post(
+      "/admin/update-stock-product-status",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter product id")],
+      authenticateToken,
+      AdminController.update_stock_product_status
+    )
 
-        /// Manage Product Rate Start //////
+    .post("/admin/get-single-stock-product", [], authenticateToken, AdminController.get_stock_product)
 
-        .post("/admin/create-product-rate", [check("product").trim().isLength({ min: 1 }).withMessage("Enter product name"), check("vendor").trim().isLength({ min: 1 }).withMessage("Select vendor name"), check("unit").trim().isLength({ min: 1 }).withMessage("Enter unit"), check("price").trim().isLength({ min: 1 }).withMessage("Enter price name")], authenticateToken, AdminController.create_product_rate)
+    .post(
+      "/admin/delete-stock-product",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter product id")],
+      authenticateToken,
+      AdminController.delete_stock_product
+    )
 
-        .post("/admin/product-rate-list", [], authenticateToken, AdminController.product_rate_list)
+    .post("/admin/update-stock-product", [], authenticateToken, AdminController.update_stock_product)
 
-        .post("/admin/get-single-product-rate", [], authenticateToken, AdminController.get_product_rate)
+    .post("/admin/all-stock-product-list", [], authenticateToken, AdminController.all_stock_product_list)
 
-        .post("/admin/update-product-rate", [check("id").trim().isLength({ min: 1 }).withMessage("Enter zipcode id"), check("product").trim().isLength({ min: 1 }).withMessage("Enter product name"), check("vendor").trim().isLength({ min: 1 }).withMessage("Select vendor name"), check("unit").trim().isLength({ min: 1 }).withMessage("Enter unit"), check("price").trim().isLength({ min: 1 }).withMessage("Enter price name")], authenticateToken, AdminController.update_product_rate)
+    /// Stock Product End ////
 
-        .post("/admin/delete-product-rate", [check("id").trim().isLength({ min: 1 }).withMessage("Enter rate id")], authenticateToken, AdminController.delete_product_rate)
+    .post("/admin/all-stock-vendor-list", [], authenticateToken, AdminController.all_stock_vendor_list)
 
-        .post("/admin/product-unit-list", [], authenticateToken, AdminController.product_unit_list)
+    .post("/admin/add-inward", [], authenticateToken, AdminController.add_inward)
 
-        .post("/admin/product-by-vendor", [], authenticateToken, AdminController.product_by_vendor)
+    .post("/admin/inward-list", [], authenticateToken, AdminController.inward_list)
 
-        /// Manage Product Rate Stop  //////
+    .post("/admin/all-stock-office-list", [], authenticateToken, AdminController.all_stock_office_list)
 
-        /// Plan Start //////
+    .post(
+      "/admin/delete-inward",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter id")],
+      authenticateToken,
+      AdminController.delete_inward
+    )
 
-        .post("/admin/create-plan", [check("name").trim().isLength({ min: 1 }).withMessage("Enter office name"), check("price").trim().isLength({ min: 1 }).withMessage("Enter price"), check("day").trim().isLength({ min: 1 }).withMessage("Enter day")], authenticateToken, AdminController.create_plan)
+    .post("/admin/get-inward-data", [], authenticateToken, AdminController.get_inward_data)
 
-        .post("/admin/plan-list", [], authenticateToken, AdminController.plan_list)
+    .post("/admin/update-inward", [], authenticateToken, AdminController.update_inward)
 
-        .post("/admin/update-plan-status", [], authenticateToken, AdminController.update_plan_status)
+    .post("/admin/add-outward", [], authenticateToken, AdminController.add_outward)
 
-        .post("/admin/get-single-plan", [], authenticateToken, AdminController.get_plan)
+    .post("/admin/outward-list", [], authenticateToken, AdminController.outward_list)
 
-        .post("/admin/update-plan", [check("name").trim().isLength({ min: 1 }).withMessage("Enter office name"), check("price").trim().isLength({ min: 1 }).withMessage("Enter price"), check("day").trim().isLength({ min: 1 }).withMessage("Enter day")], authenticateToken, AdminController.update_plan)
+    .post("/admin/get-outward-data", [], authenticateToken, AdminController.get_outward_data)
 
-        .post("/admin/delete-plan", [check("id").trim().isLength({ min: 1 }).withMessage("Enter zipcode id")], authenticateToken, AdminController.delete_plan)
+    .post("/admin/update-outward", [], authenticateToken, AdminController.update_outward)
 
-        /// Plan Stop  //////
+    .post(
+      "/admin/delete-outward",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter id")],
+      authenticateToken,
+      AdminController.delete_outward
+    )
 
-        .post("/admin/check-stock", [], authenticateToken, AdminController.check_stock)
+    .post("/admin/stock-report", [], authenticateToken, AdminController.stock_report)
 
-        .post("/admin/check-office-stock", [], authenticateToken, AdminController.check_office_stock)
+    .post("/admin/sales_report_chart", [], authenticateToken, AdminController.sales_report_chart)
 
-        /// Wallet Start ////
+    /// Expense Start ////
 
-        .post("/admin/add-wallet", [], authenticateToken, AdminController.add_wallet)
+    .post(
+      "/admin/parent-expense-category-category-list",
+      [],
+      authenticateToken,
+      AdminController.parent_expense_category_list
+    )
 
-        .post("/admin/wallet-list", [], authenticateToken, AdminController.wallet_list)
+    .post("/admin/add-expense-category", [], authenticateToken, AdminController.add_expense_category)
 
-        .post("/admin/delete-wallet", [check("id").trim().isLength({ min: 1 }).withMessage("Enter wallet id")], authenticateToken, AdminController.delete_wallet)
+    .post("/admin/expense-category-list", [], authenticateToken, AdminController.expense_list)
 
-        /// Wallet End ////
+    .post(
+      "/admin/update-expense-category-status",
+      [],
+      authenticateToken,
+      AdminController.update_expense_category_status
+    )
 
-        /// Stock Vendor Start ////
+    .post("/admin/get-single-expense-category", [], authenticateToken, AdminController.get_expense_category)
 
-        .post(
-            "/admin/add-vendor2",
-            [
-                //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
-            ],
-            authenticateToken,
-            AdminController.add_vendor2
-        )
+    .post(
+      "/admin/delete-expense-category",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")],
+      authenticateToken,
+      AdminController.delete_expense_category
+    )
 
-        .post("/admin/vendor2-list", [], authenticateToken, AdminController.vendor2_list)
+    .post("/admin/update-expense-category", [], authenticateToken, AdminController.update_expense_category)
 
-        .post("/admin/update-vendor2-status", [], authenticateToken, AdminController.update_vendor2_status)
+    /// Expense End ////
 
-        .post("/admin/update-vendor2", [], authenticateToken, AdminController.update_vendor2)
+    /// Cargo Expense Start ////
 
-        .post("/admin/get-single-vendor2", [], authenticateToken, AdminController.get_vendor2)
+    .post("/admin/add-cargo-expense", [], authenticateToken, AdminController.add_cargo_expense)
 
-        .post("/admin/delete-vendor2", [check("id").trim().isLength({ min: 1 }).withMessage("Enter vendor2 id")], authenticateToken, AdminController.delete_vendor2)
+    .post("/admin/cargo-expense-list", [], authenticateToken, AdminController.cargo_expense_list)
 
-        /// Stock Vendor End ////
+    .post("/admin/update-cargo-expense-status", [], authenticateToken, AdminController.update_cargo_expense_status)
 
-        /// Stock Category Start ////
+    .post("/admin/get-single-cargo-expense", [], authenticateToken, AdminController.get_cargo_expense)
 
-        .post("/admin/parent-stock-category-list", [], authenticateToken, AdminController.parent_stock_category_list)
+    .post(
+      "/admin/delete-cargo-expense",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")],
+      authenticateToken,
+      AdminController.delete_cargo_expense
+    )
 
-        .post(
-            "/admin/add-stock-category",
-            [
-                //check('name').trim().isLength({ min: 1 }).withMessage('Enter category name id'),
-            ],
-            authenticateToken,
-            AdminController.add_stock_category
-        )
+    .post("/admin/update-cargo-expense", [], authenticateToken, AdminController.update_cargo_expense)
 
-        .post("/admin/stock-category-list", [], authenticateToken, AdminController.stock_category_list)
+    .post("/admin/delete-cargo-expense-file", [], authenticateToken, AdminController.delete_cargo_expense_file)
 
-        .post("/admin/update-stock-category-status", [], authenticateToken, AdminController.update_stock_category_status)
+    /// Expense Cargo End ////
 
-        .post("/admin/get-single-stock-category", [], authenticateToken, AdminController.get_stock_category)
+    /// Pickup Expense Start ////
 
-        .post("/admin/delete-stock-category", [check("id").trim().isLength({ min: 1 }).withMessage("Enter category id")], authenticateToken, AdminController.delete_stock_category)
+    .post("/admin/add-pickup-expense", [], authenticateToken, AdminController.add_pickup_expense)
 
-        .post("/admin/update-stock-category", [], authenticateToken, AdminController.update_stock_category)
+    .post("/admin/pickup-expense-list", [], authenticateToken, AdminController.pickup_expense_list)
 
-        /// Stock Category End ////
+    .post("/admin/update-pickup-expense-status", [], authenticateToken, AdminController.update_pickup_expense_status)
 
-        /// Stock Product Start ////
+    .post("/admin/get-single-pickup-expense", [], authenticateToken, AdminController.get_pickup_expense)
 
-        .post("/admin/sub-stock-category-list", [check("category_id").trim().isLength({ min: 1 }).withMessage("Enter parent category id")], authenticateToken, AdminController.sub_stock_category_list)
+    .post(
+      "/admin/delete-pickup-expense",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")],
+      authenticateToken,
+      AdminController.delete_pickup_expense
+    )
 
-        .post("/admin/add-stock-product", [], authenticateToken, AdminController.add_stock_product)
+    .post("/admin/update-pickup-expense", [], authenticateToken, AdminController.update_pickup_expense)
 
-        .post("/admin/stock-product-list", [], authenticateToken, AdminController.stock_product_list)
+    .post("/admin/delete-pickup-expense-file", [], authenticateToken, AdminController.delete_pickup_expense_file)
 
-        .post("/admin/update-stock-product-status", [check("id").trim().isLength({ min: 1 }).withMessage("Enter product id")], authenticateToken, AdminController.update_stock_product_status)
+    /// Expense End ////
 
-        .post("/admin/get-single-stock-product", [], authenticateToken, AdminController.get_stock_product)
+    /// Other Expense Start ////
 
-        .post("/admin/delete-stock-product", [check("id").trim().isLength({ min: 1 }).withMessage("Enter product id")], authenticateToken, AdminController.delete_stock_product)
+    .post("/admin/add-other-expense", [], authenticateToken, AdminController.add_other_expense)
 
-        .post("/admin/update-stock-product", [], authenticateToken, AdminController.update_stock_product)
+    .post("/admin/other-expense-list", [], authenticateToken, AdminController.other_expense_list)
 
-        .post("/admin/all-stock-product-list", [], authenticateToken, AdminController.all_stock_product_list)
+    .post("/admin/update-other-expense-status", [], authenticateToken, AdminController.update_other_expense_status)
 
-        /// Stock Product End ////
+    .post("/admin/get-single-other-expense", [], authenticateToken, AdminController.get_other_expense)
 
-        .post("/admin/all-stock-vendor-list", [], authenticateToken, AdminController.all_stock_vendor_list)
+    .post(
+      "/admin/delete-other-expense",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")],
+      authenticateToken,
+      AdminController.delete_other_expense
+    )
 
-        .post("/admin/add-inward", [], authenticateToken, AdminController.add_inward)
+    .post("/admin/update-other-expense", [], authenticateToken, AdminController.update_other_expense)
 
-        .post("/admin/inward-list", [], authenticateToken, AdminController.inward_list)
+    .post("/admin/delete-other-expense-file", [], authenticateToken, AdminController.delete_other_expense_file)
 
-        .post("/admin/all-stock-office-list", [], authenticateToken, AdminController.all_stock_office_list)
+    /// Expense Other End ////
 
-        .post("/admin/delete-inward", [check("id").trim().isLength({ min: 1 }).withMessage("Enter id")], authenticateToken, AdminController.delete_inward)
+    .post("/admin/all-expense-category", [], authenticateToken, AdminController.all_expense_category)
 
-        .post("/admin/get-inward-data", [], authenticateToken, AdminController.get_inward_data)
+    .post("/admin/all-expense-sub-category", [], authenticateToken, AdminController.all_expense_sub_category)
 
-        .post("/admin/update-inward", [], authenticateToken, AdminController.update_inward)
+    /// Marketing Expense Start ////
 
-        .post("/admin/add-outward", [], authenticateToken, AdminController.add_outward)
+    .post("/admin/add-marketing-expense", [], authenticateToken, AdminController.add_marketing_expense)
 
-        .post("/admin/outward-list", [], authenticateToken, AdminController.outward_list)
+    .post("/admin/marketing-expense-list", [], authenticateToken, AdminController.marketing_expense_list)
 
-        .post("/admin/get-outward-data", [], authenticateToken, AdminController.get_outward_data)
+    .post(
+      "/admin/update-marketing-expense-status",
+      [],
+      authenticateToken,
+      AdminController.update_marketing_expense_status
+    )
 
-        .post("/admin/update-outward", [], authenticateToken, AdminController.update_outward)
+    .post("/admin/get-single-marketing-expense", [], authenticateToken, AdminController.get_marketing_expense)
 
-        .post("/admin/delete-outward", [check("id").trim().isLength({ min: 1 }).withMessage("Enter id")], authenticateToken, AdminController.delete_outward)
+    .post(
+      "/admin/delete-marketing-expense",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")],
+      authenticateToken,
+      AdminController.delete_marketing_expense
+    )
 
-        .post("/admin/stock-report", [], authenticateToken, AdminController.stock_report)
+    .post("/admin/update-marketing-expense", [], authenticateToken, AdminController.update_marketing_expense)
 
-        .post("/admin/sales_report_chart", [], authenticateToken, AdminController.sales_report_chart)
+    .post("/admin/delete-marketing-expense-file", [], authenticateToken, AdminController.delete_marketing_expense_file)
 
-        /// Expense Start ////
+    /// Expense Marketing End ////
 
-        .post("/admin/parent-expense-category-category-list", [], authenticateToken, AdminController.parent_expense_category_list)
+    /// Travel Expense Start ////
 
-        .post("/admin/add-expense-category", [], authenticateToken, AdminController.add_expense_category)
+    .post("/admin/add-travel-expense", [], authenticateToken, AdminController.add_travel_expense)
 
-        .post("/admin/expense-category-list", [], authenticateToken, AdminController.expense_list)
+    .post("/admin/travel-expense-list", [], authenticateToken, AdminController.travel_expense_list)
 
-        .post("/admin/update-expense-category-status", [], authenticateToken, AdminController.update_expense_category_status)
+    .post("/admin/update-travel-expense-status", [], authenticateToken, AdminController.update_travel_expense_status)
 
-        .post("/admin/get-single-expense-category", [], authenticateToken, AdminController.get_expense_category)
+    .post("/admin/get-single-travel-expense", [], authenticateToken, AdminController.get_travel_expense)
 
-        .post("/admin/delete-expense-category", [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")], authenticateToken, AdminController.delete_expense_category)
+    .post(
+      "/admin/delete-travel-expense",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")],
+      authenticateToken,
+      AdminController.delete_travel_expense
+    )
 
-        .post("/admin/update-expense-category", [], authenticateToken, AdminController.update_expense_category)
+    .post("/admin/update-travel-expense", [], authenticateToken, AdminController.update_travel_expense)
 
-        /// Expense End ////
+    .post("/admin/delete-travel-expense-file", [], authenticateToken, AdminController.delete_travel_expense_file)
 
-        /// Cargo Expense Start ////
+    /// Travel Marketing End ////
 
-        .post("/admin/add-cargo-expense", [], authenticateToken, AdminController.add_cargo_expense)
+    /// Requisition Expense Start ////
 
-        .post("/admin/cargo-expense-list", [], authenticateToken, AdminController.cargo_expense_list)
+    .post("/admin/add-requisition-expense", [], authenticateToken, AdminController.add_requisition_expense)
 
-        .post("/admin/update-cargo-expense-status", [], authenticateToken, AdminController.update_cargo_expense_status)
+    .post("/admin/requisition-expense-list", [], authenticateToken, AdminController.requisition_expense_list)
 
-        .post("/admin/get-single-cargo-expense", [], authenticateToken, AdminController.get_cargo_expense)
+    .post(
+      "/admin/update-requisition-expense-status",
+      [],
+      authenticateToken,
+      AdminController.update_requisition_expense_status
+    )
 
-        .post("/admin/delete-cargo-expense", [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")], authenticateToken, AdminController.delete_cargo_expense)
+    .post("/admin/get-single-requisition-expense", [], authenticateToken, AdminController.get_requisition_expense)
 
-        .post("/admin/update-cargo-expense", [], authenticateToken, AdminController.update_cargo_expense)
+    .post(
+      "/admin/delete-requisition-expense",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")],
+      authenticateToken,
+      AdminController.delete_requisition_expense
+    )
 
-        .post("/admin/delete-cargo-expense-file", [], authenticateToken, AdminController.delete_cargo_expense_file)
+    .post("/admin/update-requisition-expense", [], authenticateToken, AdminController.update_requisition_expense)
 
-        /// Expense Cargo End ////
+    .post(
+      "/admin/delete-requisition-expense-file",
+      [],
+      authenticateToken,
+      AdminController.delete_requisition_expense_file
+    )
 
-        /// Pickup Expense Start ////
+    /// Expense Requisition End ////
 
-        .post("/admin/add-pickup-expense", [], authenticateToken, AdminController.add_pickup_expense)
+    /// COD Expense Start ////
 
-        .post("/admin/pickup-expense-list", [], authenticateToken, AdminController.pickup_expense_list)
+    .post("/admin/add-cod-expense", [], authenticateToken, AdminController.add_cod_expense)
 
-        .post("/admin/update-pickup-expense-status", [], authenticateToken, AdminController.update_pickup_expense_status)
+    .post("/admin/cod-expense-list", [], authenticateToken, AdminController.cod_expense_list)
 
-        .post("/admin/get-single-pickup-expense", [], authenticateToken, AdminController.get_pickup_expense)
+    .post("/admin/update-cod-expense-status", [], authenticateToken, AdminController.update_cod_expense_status)
 
-        .post("/admin/delete-pickup-expense", [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")], authenticateToken, AdminController.delete_pickup_expense)
+    .post("/admin/get-single-cod-expense", [], authenticateToken, AdminController.get_cod_expense)
 
-        .post("/admin/update-pickup-expense", [], authenticateToken, AdminController.update_pickup_expense)
+    .post(
+      "/admin/delete-cod-expense",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")],
+      authenticateToken,
+      AdminController.delete_cod_expense
+    )
 
-        .post("/admin/delete-pickup-expense-file", [], authenticateToken, AdminController.delete_pickup_expense_file)
+    .post("/admin/update-cod-expense", [], authenticateToken, AdminController.update_cod_expense)
 
-        /// Expense End ////
+    .post("/admin/delete-cod-expense-file", [], authenticateToken, AdminController.delete_cod_expense_file)
 
-        /// Other Expense Start ////
+    .post("/admin/all-delivery-boy-list", [], authenticateToken, AdminController.all_delivery_boy_list)
 
-        .post("/admin/add-other-expense", [], authenticateToken, AdminController.add_other_expense)
+    /// COD Requisition End ////
 
-        .post("/admin/other-expense-list", [], authenticateToken, AdminController.other_expense_list)
+    /// Currency Start ////
 
-        .post("/admin/update-other-expense-status", [], authenticateToken, AdminController.update_other_expense_status)
+    .post("/admin/add-currency", [], authenticateToken, AdminController.add_currency)
 
-        .post("/admin/get-single-other-expense", [], authenticateToken, AdminController.get_other_expense)
+    .post("/admin/currency-list", [], authenticateToken, AdminController.currency_list)
 
-        .post("/admin/delete-other-expense", [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")], authenticateToken, AdminController.delete_other_expense)
+    .post("/admin/update-currency-status", [], authenticateToken, AdminController.update_currency_status)
 
-        .post("/admin/update-other-expense", [], authenticateToken, AdminController.update_other_expense)
+    .post("/admin/update-currency", [], authenticateToken, AdminController.update_currency)
 
-        .post("/admin/delete-other-expense-file", [], authenticateToken, AdminController.delete_other_expense_file)
+    .post("/admin/get-single-currency", [], authenticateToken, AdminController.get_currency)
 
-        /// Expense Other End ////
+    .post(
+      "/admin/delete-currency",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter currency id")],
+      authenticateToken,
+      AdminController.delete_currency
+    )
+    .post("/admin/default-currency", [], authenticateToken, AdminController.default_currency)
+    /// Currency End ////
 
-        .post("/admin/all-expense-category", [], authenticateToken, AdminController.all_expense_category)
+    /// Master category Start ////
 
-        .post("/admin/all-expense-sub-category", [], authenticateToken, AdminController.all_expense_sub_category)
+    .post("/admin/add-master-category", [], authenticateToken, AdminController.add_master_category)
 
-        /// Marketing Expense Start ////
+    .post("/admin/master-category-list", [], authenticateToken, AdminController.master_category_list)
 
-        .post("/admin/add-marketing-expense", [], authenticateToken, AdminController.add_marketing_expense)
+    .post("/admin/update-master-category-status", [], authenticateToken, AdminController.update_master_category_status)
 
-        .post("/admin/marketing-expense-list", [], authenticateToken, AdminController.marketing_expense_list)
+    .post("/admin/update-master-category", [], authenticateToken, AdminController.update_master_category)
 
-        .post("/admin/update-marketing-expense-status", [], authenticateToken, AdminController.update_marketing_expense_status)
+    .post("/admin/get-single-master-category", [], authenticateToken, AdminController.get_master_category)
 
-        .post("/admin/get-single-marketing-expense", [], authenticateToken, AdminController.get_marketing_expense)
+    .post(
+      "/admin/delete-master-category",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter master category id")],
+      authenticateToken,
+      AdminController.delete_master_category
+    )
+    .post("/admin/parent-master-category-list", [], authenticateToken, AdminController.parent_master_category_list)
 
-        .post("/admin/delete-marketing-expense", [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")], authenticateToken, AdminController.delete_marketing_expense)
+    .post("/admin/add-section-image", [], authenticateToken, AdminController.add_section_image)
+    .post("/admin/update-section-image", [], authenticateToken, AdminController.update_section_image)
+    .post("/admin/section-image-list", [], authenticateToken, AdminController.section_image_list)
+    .post(
+      "/admin/delete-section-image",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter category id")],
+      authenticateToken,
+      AdminController.delete_section_image
+    )
+    .post("/admin/all-parent-category-list", [], authenticateToken, AdminController.all_parent_category_list)
+    /// Master category End ////
 
-        .post("/admin/update-marketing-expense", [], authenticateToken, AdminController.update_marketing_expense)
+    /// Country Start ///
 
-        .post("/admin/delete-marketing-expense-file", [], authenticateToken, AdminController.delete_marketing_expense_file)
+    .post("/admin/create-country", [], authenticateToken, AdminController.create_country)
 
-        /// Expense Marketing End ////
+    .post("/admin/country-list", [], authenticateToken, AdminController.country_list)
+    .get("/admin/all-country-list", [], AdminController.all_country_list)
 
-        /// Travel Expense Start ////
+    .post("/admin/update-country-status", [], authenticateToken, AdminController.update_country_status)
 
-        .post("/admin/add-travel-expense", [], authenticateToken, AdminController.add_travel_expense)
+    .post("/admin/get-single-country", [], authenticateToken, AdminController.get_country)
 
-        .post("/admin/travel-expense-list", [], authenticateToken, AdminController.travel_expense_list)
+    .post("/admin/update-country", [], authenticateToken, AdminController.update_country)
 
-        .post("/admin/update-travel-expense-status", [], authenticateToken, AdminController.update_travel_expense_status)
+    .post(
+      "/admin/delete-country",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter country id")],
+      authenticateToken,
+      AdminController.delete_country
+    )
 
-        .post("/admin/get-single-travel-expense", [], authenticateToken, AdminController.get_travel_expense)
+    .post("/admin/update-child-stock", [], authenticateToken, AdminController.update_child_stock)
+    .post("/admin/update-parent-stock", [], authenticateToken, AdminController.update_parent_stock)
 
-        .post("/admin/delete-travel-expense", [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")], authenticateToken, AdminController.delete_travel_expense)
+    /// Country End ///
 
-        .post("/admin/update-travel-expense", [], authenticateToken, AdminController.update_travel_expense)
+    /// Deactivate Reason Start ////
 
-        .post("/admin/delete-travel-expense-file", [], authenticateToken, AdminController.delete_travel_expense_file)
+    .post("/admin/add-deactivate-reason", authenticateToken, AdminController.add_reason_reason)
 
-        /// Travel Marketing End ////
+    .post("/admin/deactivate-reason-list", [], authenticateToken, AdminController.deactivate_reason_list)
 
-        /// Requisition Expense Start ////
+    .post(
+      "/admin/update-deactivate-reason-status",
+      [],
+      authenticateToken,
+      AdminController.update_deactivate_reason_status
+    )
 
-        .post("/admin/add-requisition-expense", [], authenticateToken, AdminController.add_requisition_expense)
+    .post("/admin/update-deactivate-reason", [], authenticateToken, AdminController.update_deactivate_reason)
 
-        .post("/admin/requisition-expense-list", [], authenticateToken, AdminController.requisition_expense_list)
+    .post("/admin/get-single-deactivate-reason", [], authenticateToken, AdminController.get_deactivate_reason)
 
-        .post("/admin/update-requisition-expense-status", [], authenticateToken, AdminController.update_requisition_expense_status)
+    .post(
+      "/admin/delete-deactivate-reason",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter product type id")],
+      authenticateToken,
+      AdminController.delete_deactivate_reason
+    )
 
-        .post("/admin/get-single-requisition-expense", [], authenticateToken, AdminController.get_requisition_expense)
+    /// Deactivate Reason End ////
 
-        .post("/admin/delete-requisition-expense", [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")], authenticateToken, AdminController.delete_requisition_expense)
+    /// Return Reason Start ////
 
-        .post("/admin/update-requisition-expense", [], authenticateToken, AdminController.update_requisition_expense)
+    .post("/admin/add-return-reason", authenticateToken, AdminController.add_return_reason)
 
-        .post("/admin/delete-requisition-expense-file", [], authenticateToken, AdminController.delete_requisition_expense_file)
+    .post("/admin/return-reason-list", [], authenticateToken, AdminController.return_reason_list)
 
-        /// Expense Requisition End ////
+    .post("/admin/update-return-reason-status", [], authenticateToken, AdminController.update_return_reason_status)
 
-        /// COD Expense Start ////
+    .post("/admin/update-return-reason", [], authenticateToken, AdminController.update_return_reason)
 
-        .post("/admin/add-cod-expense", [], authenticateToken, AdminController.add_cod_expense)
+    .post("/admin/get-single-return-reason", [], authenticateToken, AdminController.get_return_reason)
 
-        .post("/admin/cod-expense-list", [], authenticateToken, AdminController.cod_expense_list)
+    .post(
+      "/admin/delete-return-reason",
+      [check("id").trim().isLength({ min: 1 }).withMessage("Enter product type id")],
+      authenticateToken,
+      AdminController.delete_return_reason
+    )
+    .post("/admin/update-customer-list", [], authenticateToken, AdminController.update_customer_list)
 
-        .post("/admin/update-cod-expense-status", [], authenticateToken, AdminController.update_cod_expense_status)
+    .post("/admin/bulk-upload", upload.single("upload"), [], authenticateToken, AdminController.bulk_upload);
 
-        .post("/admin/get-single-cod-expense", [], authenticateToken, AdminController.get_cod_expense)
+  app.post("/admin/add-landing-extra", authenticateToken, AdminController.add_landing_extra);
+  app.post("/admin/grid-image-list", [], authenticateToken, AdminController.grid_image_list);
+  app.post("/admin/update-landing-extra", authenticateToken, AdminController.update_landing_extra);
+  app.post("/admin/delete-grid", authenticateToken, AdminController.delete_grid);
+  app.post("/admin/update-landing-extra-sort", authenticateToken, AdminController.update_landing_extra_sort);
+  /// Return Reason End ////
 
-        .post("/admin/delete-cod-expense", [check("id").trim().isLength({ min: 1 }).withMessage("Enter expense id")], authenticateToken, AdminController.delete_cod_expense)
+  app.get("/api/test", AdminController.test);
 
-        .post("/admin/update-cod-expense", [], authenticateToken, AdminController.update_cod_expense)
+  //======================= NEW Features free shipping ================ //
 
-        .post("/admin/delete-cod-expense-file", [], authenticateToken, AdminController.delete_cod_expense_file)
-
-        .post("/admin/all-delivery-boy-list", [], authenticateToken, AdminController.all_delivery_boy_list)
-
-        /// COD Requisition End ////
-
-        /// Currency Start ////
-
-        .post("/admin/add-currency", [], authenticateToken, AdminController.add_currency)
-
-        .post("/admin/currency-list", [], authenticateToken, AdminController.currency_list)
-
-        .post("/admin/update-currency-status", [], authenticateToken, AdminController.update_currency_status)
-
-        .post("/admin/update-currency", [], authenticateToken, AdminController.update_currency)
-
-        .post("/admin/get-single-currency", [], authenticateToken, AdminController.get_currency)
-
-        .post("/admin/delete-currency", [check("id").trim().isLength({ min: 1 }).withMessage("Enter currency id")], authenticateToken, AdminController.delete_currency)
-        .post("/admin/default-currency", [], authenticateToken, AdminController.default_currency)
-        /// Currency End ////
-
-        /// Master category Start ////
-
-        .post("/admin/add-master-category", [], authenticateToken, AdminController.add_master_category)
-
-        .post("/admin/master-category-list", [], authenticateToken, AdminController.master_category_list)
-
-        .post("/admin/update-master-category-status", [], authenticateToken, AdminController.update_master_category_status)
-
-        .post("/admin/update-master-category", [], authenticateToken, AdminController.update_master_category)
-
-        .post("/admin/get-single-master-category", [], authenticateToken, AdminController.get_master_category)
-
-        .post("/admin/delete-master-category", [check("id").trim().isLength({ min: 1 }).withMessage("Enter master category id")], authenticateToken, AdminController.delete_master_category)
-        .post("/admin/parent-master-category-list", [], authenticateToken, AdminController.parent_master_category_list)
-
-        .post("/admin/add-section-image", [], authenticateToken, AdminController.add_section_image)
-        .post("/admin/update-section-image", [], authenticateToken, AdminController.update_section_image)
-        .post("/admin/section-image-list", [], authenticateToken, AdminController.section_image_list)
-        .post("/admin/delete-section-image", [check("id").trim().isLength({ min: 1 }).withMessage("Enter category id")], authenticateToken, AdminController.delete_section_image)
-        .post("/admin/all-parent-category-list", [], authenticateToken, AdminController.all_parent_category_list)
-        /// Master category End ////
-
-        /// Country Start ///
-
-        .post("/admin/create-country", [], authenticateToken, AdminController.create_country)
-
-        .post("/admin/country-list", [], authenticateToken, AdminController.country_list)
-        .get("/admin/all-country-list", [], AdminController.all_country_list)
-
-        .post("/admin/update-country-status", [], authenticateToken, AdminController.update_country_status)
-
-        .post("/admin/get-single-country", [], authenticateToken, AdminController.get_country)
-
-        .post("/admin/update-country", [], authenticateToken, AdminController.update_country)
-
-        .post("/admin/delete-country", [check("id").trim().isLength({ min: 1 }).withMessage("Enter country id")], authenticateToken, AdminController.delete_country)
-
-        .post("/admin/update-child-stock", [], authenticateToken, AdminController.update_child_stock)
-        .post("/admin/update-parent-stock", [], authenticateToken, AdminController.update_parent_stock)
-
-        /// Country End ///
-
-        /// Deactivate Reason Start ////
-
-        .post("/admin/add-deactivate-reason", authenticateToken, AdminController.add_reason_reason)
-
-        .post("/admin/deactivate-reason-list", [], authenticateToken, AdminController.deactivate_reason_list)
-
-        .post("/admin/update-deactivate-reason-status", [], authenticateToken, AdminController.update_deactivate_reason_status)
-
-        .post("/admin/update-deactivate-reason", [], authenticateToken, AdminController.update_deactivate_reason)
-
-        .post("/admin/get-single-deactivate-reason", [], authenticateToken, AdminController.get_deactivate_reason)
-
-        .post("/admin/delete-deactivate-reason", [check("id").trim().isLength({ min: 1 }).withMessage("Enter product type id")], authenticateToken, AdminController.delete_deactivate_reason)
-
-        /// Deactivate Reason End ////
-
-        /// Return Reason Start ////
-
-        .post("/admin/add-return-reason", authenticateToken, AdminController.add_return_reason)
-
-        .post("/admin/return-reason-list", [], authenticateToken, AdminController.return_reason_list)
-
-        .post("/admin/update-return-reason-status", [], authenticateToken, AdminController.update_return_reason_status)
-
-        .post("/admin/update-return-reason", [], authenticateToken, AdminController.update_return_reason)
-
-        .post("/admin/get-single-return-reason", [], authenticateToken, AdminController.get_return_reason)
-
-        .post("/admin/delete-return-reason", [check("id").trim().isLength({ min: 1 }).withMessage("Enter product type id")], authenticateToken, AdminController.delete_return_reason)
-        .post("/admin/update-customer-list", [], authenticateToken, AdminController.update_customer_list)
-
-        .post("/admin/bulk-upload", upload.single("upload"), [], authenticateToken, AdminController.bulk_upload);
-
-    app.post("/admin/add-landing-extra", authenticateToken, AdminController.add_landing_extra);
-    app.post("/admin/grid-image-list", [], authenticateToken, AdminController.grid_image_list);
-    app.post("/admin/update-landing-extra", authenticateToken, AdminController.update_landing_extra);
-    app.post("/admin/delete-grid", authenticateToken, AdminController.delete_grid);
-    app.post("/admin/update-landing-extra-sort", authenticateToken, AdminController.update_landing_extra_sort);
-    /// Return Reason End ////
-
-    app.get("/api/test", AdminController.test);
+  app.post("/api/freeshipping", shippingController.addFreeshipping);
+  app.get("/api/freeshipping", shippingController.listFreeshipping);
+  app.post("/api/addshipping", shippingController.addShipping);
+  app.get("/api/shipping", shippingController.listShipping);
+  app.delete("/api/deleteShipping/:id", shippingController.deleteShipping);
+  app.patch("/api/shipping", shippingController.updateShipping);
+  app.get("/zones", shippingController.Zones);
 };

@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node local.js",
+    "start": "nodemon local.js",
     "deploy": "serverless deploy"
   },
   "keywords": [],
