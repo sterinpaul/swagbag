@@ -22,7 +22,10 @@ module.exports = {
   listFreeshipping: async (req, res) => {
     try {
       const data = await FreeShipping.find();
-      res.json({ message: "List of freeshipping products", listFreeshipping: data });
+      res.json({
+        message: "List of freeshipping products",
+        listFreeshipping: data,
+      });
     } catch (error) {
       console.log(error);
     }
@@ -73,7 +76,10 @@ module.exports = {
       if (newtype) {
         createShipping(shippingData.type, shippingData, fromDate, toDate);
       }
-      res.json({ status: 200, message: "Shipping option updated successfully" });
+      res.json({
+        status: 200,
+        message: "Shipping option updated successfully",
+      });
     } catch (error) {
       console.log(error);
     }
@@ -87,15 +93,15 @@ module.exports = {
           cix_price: 65,
           ciy_price: 56,
           twv: 5.5,
-          freeShipping: false,
+          free_shipping: false,
         },
         {
           _id: 2,
           zone_name: "Zone 2",
           cix_price: 75,
-          ciy: 22,
+          ciy_price: 22,
           twv: 10,
-          freeShipping: true,
+          free_shipping: true,
         },
         {
           _id: 3,
@@ -103,10 +109,12 @@ module.exports = {
           cix_price: 90,
           ciy_price: 33,
           twv: 20.1,
-          freeShipping: false,
+          free_shipping: false,
         },
       ];
-      res.status(200).json({ status: "success", result: data, totalCount: data.length });
+      res
+        .status(200)
+        .json({ status: "success", result: data, totalCount: data.length });
     } catch (error) {
       res.status(405).json({ error: error.message });
     }

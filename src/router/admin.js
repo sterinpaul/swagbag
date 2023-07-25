@@ -1610,5 +1610,5 @@ module.exports = function (app) {
   app.get("/api/shipping", shippingController.listShipping);
   app.delete("/api/deleteShipping/:id", shippingController.deleteShipping);
   app.patch("/api/shipping", shippingController.updateShipping);
-  app.get("/zones", shippingController.Zones);
+  app.get("/admin/zones", shippingController.Zones);
 };
