@@ -1,6 +1,7 @@
 const ProductModel = require("../models/ProductModel");
 const FreeShipping = require("../models/freeshippingModel");
 const NewShipping = require("../models/newShippingModel");
+const zoneModel = require("../models/zoneModel");
 
 module.exports = {
   addFreeshipping: (req, res) => {
@@ -78,37 +79,75 @@ module.exports = {
       console.log(error);
     }
   },
+
   Zones: async (req, res) => {
     try {
-      const data = [
-        {
-          _id: 1,
-          zone_name: "Zone 1",
-          cix_price: 65,
-          ciy_price: 56,
-          twv: 5.5,
-          freeShipping: false,
-        },
-        {
-          _id: 2,
-          zone_name: "Zone 2",
-          cix_price: 75,
-          ciy: 22,
-          twv: 10,
-          freeShipping: true,
-        },
-        {
-          _id: 3,
-          zone_name: "Zone 3",
-          cix_price: 90,
-          ciy_price: 33,
-          twv: 20.1,
-          freeShipping: false,
-        },
-      ];
-      res.status(200).json({ status: "success", result: data, totalCount: data.length });
+      // Fetch all zones from the database
+      const result = await zoneModel.find({});
+      res.status(200).json({ status: "success", result, totalCount: result.length });
     } catch (error) {
-      res.status(405).json({ error: error.message });
+      res.status(500).json({ status: "error", error: "Failed to fetch zones." });
+    }
+  },
+
+  addZone: async (req, res) => {
+    //
+    const { zone_name, cix_price, ciy_price, twv, free_shipping } = req.body;
+
+    try {
+      // Create a new zone in the database using the provided details
+      const newZone = await zoneModel.create({ zone_name, cix_price, ciy_price, twv, free_shipping });
+
+      if (!newZone) {
+        return res.status(500).json({ status: "error", error: "Failed to create the zone." });
+      }
+
+      res.status(200).json({ status: "success", result: newZone });
+    } catch (error) {
+      res.status(500).json({ status: "error", error: "Failed to add the zone." });
+    }
+  },
+
+  updateZone: async (req, res) => {
+    const { zone_name, cix_price, ciy_price, twv, free_shipping } = req.body;
+    const zoneId = req.params.id;
+    try {
+      // Find the zone in the database and update it with the provided details
+      const updateZone = await zoneModel.findByIdAndUpdate(
+        zoneId,
+        {
+          zone_name,
+          cix_price,
+          ciy_price,
+          twv,
+          free_shipping,
+        },
+        { new: true }
+      );
+
+      if (!updateZone) {
+        res.status(404).json({ status: "error", error: "Zone not found." });
+      }
+
+      res.status(200).json({ status: "success", result: updateZone });
+    } catch (error) {
+      res.status(500).json({ status: "error", error: "Failed to update the zone." });
+    }
+  },
+
+  deleteZone: async (req, res) => {
+    const zoneId = req.params.id;
+    try {
+      // Find the zone in the database and delete it
+      const deleteZone = await zoneModel.findByIdAndDelete(zoneId);
+
+      if (!deleteZone) {
+        res.status(404).json({ status: "error", error: "Zone not found." });
+      }
+
+      res.status(200).json({ status: "success", message: "Zone deleted successfully." });
+    } catch (error) {
+      res.status(500).json({ status: "error", error: "Failed to delete the zone." });
     }
   },
 };
