@@ -21,6 +21,4 @@ const freeShippingSchema = new mongoose.Schema({
   },
 });
 
-const FreeShipping = mongoose.model("freeShipping", freeShippingSchema);
-
-module.exports = FreeShipping;
+module.exports = FreeShipping = mongoose.model("freeShipping", freeShippingSchema);
