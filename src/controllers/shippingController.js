@@ -19,7 +19,7 @@ module.exports = {
           })
           return resultDta
       }))
-      res.status(201).json({status:"success",result:responseData})
+      res.status(201).json({status:"success",message: "Free shipping has been successfully added for the selected products.",totalCount:responseData.length})
     } catch (error) {
       console.error(error)
       res

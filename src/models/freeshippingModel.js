@@ -7,9 +7,12 @@ const freeShippingSchema = new mongoose.Schema({
     required: true,
   },
   areas: {
-    type: [String],
-    enum: ["in_service", "out_service", "international"],
-    required: true,
+    type: Object,
+   properties:{
+    in_service:{type:Boolean},
+    out_service:{type:Boolean},
+    international:{type:Boolean}
+   }
   },
   from_date: {
     type: Date,
@@ -20,6 +23,6 @@ const freeShippingSchema = new mongoose.Schema({
     expires: 0,
     required: true,
   },
-});
+},{timestamps:true});
 
 module.exports = FreeShipping = mongoose.model("freeShipping", freeShippingSchema);
