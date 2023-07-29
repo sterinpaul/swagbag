@@ -20,6 +20,7 @@ module.exports = {
             from_date,
             to_date,
           });
+          await ProductModel.updateOne({_id:product_id},{$set:{freeShipping:true}})
           return resultDta;
         })
       );
