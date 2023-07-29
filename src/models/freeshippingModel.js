@@ -6,9 +6,9 @@ const freeShippingSchema = new mongoose.Schema({
     ref: "products",
     required: true,
   },
-  area: {
+  areas: {
     type: [String],
-    enum: ["inservice", "outservice", "international"],
+    enum: ["in_service", "out_service", "international"],
     required: true,
   },
   from_date: {

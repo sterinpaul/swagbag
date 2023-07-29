@@ -8,12 +8,12 @@ const CountriesZoned = require("../models/CountriesZoned");
 
 module.exports = {
   addFreeshipping: async (req, res) => {
-    const { selected_productIds, area, from_date, to_date } = req.body;
+    const { selected_productIds, areas, from_date, to_date } = req.body;
     try {
       const responseData = await Promise.all(selected_productIds?.map(async(product_id)=>{
           const resultDta = await FreeShippingModel.create({
             product_id,
-            area,
+            areas,
             from_date,
             to_date
           })
