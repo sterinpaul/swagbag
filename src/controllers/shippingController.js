@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const CountriesZoned = require("../models/CountriesZoned");
 const { json } = require("express");
 const freeshippingModel = require("../models/freeshippingModel");
+const inserviceAreaModel = require("../models/inserviceAreaModel");
 
 
 module.exports = {
@@ -243,15 +244,18 @@ module.exports = {
     try {
       // Find the zone in the database and delete it
       const deleteZone = await zoneModel.findByIdAndDelete(zoneId);
-
       if (!deleteZone) {
         res.status(404).json({ status: "error", error: "Zone not found." });
       }
-
+       if(deleteZone){
+        await CountriesZoned.deleteMany({"zone.zoneId":zoneId});
+       }
+      
       res
         .status(200)
         .json({ status: "success", message: "Zone deleted successfully." });
     } catch (error) {
+      console.log(error)
       res
         .status(500)
         .json({ status: "error", error: "Failed to delete the zone." });
@@ -408,6 +412,35 @@ module.exports = {
         .json({ status: "error", error: "Failed to delete the zone." });
     }
   },
+  addInserviceArea:async(req,res)=>{
+    const payload = req.body
+    try {
+      const newInserviceArea = await inserviceAreaModel.create(payload)
+      res.status(201).json({status:"success", "message": "Inservice area created successfully.",result:newInserviceArea})
+    } catch (error) {
+      res.status(500).json({ error: "Failed to create the inservice area." });
+    }
+  },
+  getAllInserviceArea:async(req,res)=>{
+    try {
+      const result = await inserviceAreaModel.find({})
+      // if(!result){
+      //   return res.status(404).json({ error: "Inservice area not found." });
+      // }
+      res.status(200).json({status:"success",result,totalCount:result.length})
+    } catch (error) {
+      res.status(500).json({ error: "Failed to fetch inservice areas." });
+    }
+  },
+  deleteInserviceArea:async(req,res)=>{
+    try {
+      const deletedData = await inserviceAreaModel.findByIdAndDelete(req.params.id);
+      if(!deletedData) return res.status(404).json({ error: "Inservice area not found." });
+      res.status(200).json({ message: "Inservice area deleted successfully." });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete the inservice area." });
+    }
+  }
 };
 
 async function createShipping(type, shipping, fromDate, toDate) {
