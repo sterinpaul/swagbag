@@ -29,7 +29,7 @@ module.exports = {
   },
   listFreeshipping: async (req, res) => {
     try {
-      const result = await FreeShippingModel.find();
+      const result = await FreeShippingModel.find().populate('product_id')
      res.status(200).json({status:"success",result})
     } catch (error) {
       res
