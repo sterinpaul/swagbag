@@ -49,7 +49,7 @@ require("./router/ContactNow.js")(app);
 
 var time = new Date().getHours();
 var OrderOtherNoteModel = require("./models/OrderOtherNoteModel")
-if (time == 00) {
+if (time == 0) {
     // console.log(time)
     OrderOtherNoteModel.find().then(response => {
         for (var i = 0; i < response.length; i++) {

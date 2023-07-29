@@ -1,36 +1,40 @@
 const ProductModel = require("../models/ProductModel");
-const FreeShipping = require("../models/freeshippingModel");
+const FreeShippingModel = require("../models/freeshippingModel");
 const NewShipping = require("../models/newShippingModel");
 const zoneModel = require("../models/zoneModel");
 const mongoose = require("mongoose");
 const CountriesZoned = require("../models/CountriesZoned");
 
+
 module.exports = {
-  addFreeshipping: (req, res) => {
+  addFreeshipping: async (req, res) => {
+    const { selected_productIds, area, from_date, to_date } = req.body;
     try {
-      const { productIds, fromDate, toDate } = req.body;
-      productIds.forEach(async (productId) => {
-        const res = await FreeShipping.create({
-          product: productId,
-          fromDate: fromDate,
-          toDate: toDate,
-        });
-        console.log(res);
-      });
-      res.json({ message: "Free shipping status updated successfully" });
+      const responseData = await Promise.all(selected_productIds?.map(async(product_id)=>{
+          const resultDta = await FreeShippingModel.create({
+            product_id,
+            area,
+            from_date,
+            to_date
+          })
+          return resultDta
+      }))
+      res.status(201).json({status:"success",result:responseData})
     } catch (error) {
-      console.log(error);
+      console.error(error)
+      res
+        .status(500)
+        .json({ status: "error", error: "Failed to add the freeshipping." });
     }
   },
   listFreeshipping: async (req, res) => {
     try {
-      const data = await FreeShipping.find();
-      res.json({
-        message: "List of freeshipping products",
-        listFreeshipping: data,
-      });
+      const result = await FreeShippingModel.find();
+     res.status(200).json({status:"success",result})
     } catch (error) {
-      console.log(error);
+      res
+      .status(500)
+      .json({ status: "error", error: "Failed to fetch freeshipping list." });
     }
   },
   addShipping: async (req, res) => {
