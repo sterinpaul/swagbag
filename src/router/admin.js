@@ -3148,6 +3148,7 @@ module.exports = function (app) {
   app.post("/admin/freeshipping", shippingController.addFreeshipping);
   app.get("/admin/freeshipping", shippingController.listFreeshipping);
   app.get("/admin/freeshipping/:id",shippingController.getFreeShippingById)
+  // app.get("/admin/free")
   app.put("/admin/freeshipping/:id",shippingController.updateFreeshipping)
   app.delete("/admin/freeshipping/:id",shippingController.deleteFreeshipping)
   app.post("/api/addshipping", shippingController.addShipping);

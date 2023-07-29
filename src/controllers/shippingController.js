@@ -38,7 +38,7 @@ module.exports = {
   },
   listFreeshipping: async (req, res) => {
     try {
-      const result = await FreeShippingModel.find();
+      const result = await FreeShippingModel.find().populate('product_id')
       res.status(200).json({ status: "success", result });
     } catch (error) {
       res
@@ -87,8 +87,6 @@ module.exports = {
     } catch (error) {
       res.status(500).json({error:"Failed to delete free shipping."})
     }
-   
-
   },
   addShipping: async (req, res) => {
     try {
