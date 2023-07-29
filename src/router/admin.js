@@ -3145,8 +3145,8 @@ module.exports = function (app) {
 
   //======================= NEW Features free shipping ================ //
 
-  app.post("/api/freeshipping", shippingController.addFreeshipping);
-  app.get("/api/freeshipping", shippingController.listFreeshipping);
+  app.post("/admin/freeshipping", shippingController.addFreeshipping);
+  app.get("/admin/freeshipping", shippingController.listFreeshipping);
   app.post("/api/addshipping", shippingController.addShipping);
   app.get("/api/shipping", shippingController.listShipping);
   app.delete("/api/deleteShipping/:id", shippingController.deleteShipping);

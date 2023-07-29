@@ -16,7 +16,7 @@ const NewShippingSchema = new mongoose.Schema({
   },
   shipping_cost: {
     type: Number,
-    required: true,
+    required: true, 
   },
   fromDate: {
     type: Date,

@@ -1,20 +1,21 @@
 const mongoose = require("mongoose");
 
 const freeShippingSchema = new mongoose.Schema({
-  product: {
+  product_id: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "products",
     required: true,
   },
-  freeShipping: {
-    type: Boolean,
-    default: true,
+  area: {
+    type: [String],
+    enum: ["inservice", "outservice", "international"],
+    required: true,
   },
-  fromDate: {
+  from_date: {
     type: Date,
     required: true,
   },
-  toDate: {
+  to_date: {
     type: Date,
     expires: 0,
     required: true,
