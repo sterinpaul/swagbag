@@ -3160,6 +3160,7 @@ module.exports = function (app) {
   app.get("/admin/country-for-zoned", shippingController.getCountriesZoned);
   app.get("/admin/country", shippingController.getCountries);
   app.post("/admin/country", shippingController.createZonedCountry);
-  app.put("/admin/country/:id", shippingController.getCountriesZoned);
-  app.delete("/admin/country/:id", shippingController.getCountriesZoned);
+  app.get("/admin/country/:id", shippingController.getDetailCountryZoned);
+  app.put("/admin/country/:id", shippingController.updateCountryZoned);
+  app.delete("/admin/country/:id", shippingController.deleteCountryZoned);
 };
