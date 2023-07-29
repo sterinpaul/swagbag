@@ -5,23 +5,29 @@ const zoneModel = require("../models/zoneModel");
 const mongoose = require("mongoose");
 const CountriesZoned = require("../models/CountriesZoned");
 
-
 module.exports = {
   addFreeshipping: async (req, res) => {
     const { selected_productIds, areas, from_date, to_date } = req.body;
     try {
-      const responseData = await Promise.all(selected_productIds?.map(async(product_id)=>{
+      const responseData = await Promise.all(
+        selected_productIds?.map(async (product_id) => {
           const resultDta = await FreeShippingModel.create({
             product_id,
             areas,
             from_date,
-            to_date
-          })
-          return resultDta
-      }))
-      res.status(201).json({status:"success",message: "Free shipping has been successfully added for the selected products.",totalCount:responseData.length})
+            to_date,
+          });
+          return resultDta;
+        })
+      );
+      res.status(201).json({
+        status: "success",
+        message:
+          "Free shipping has been successfully added for the selected products.",
+        totalCount: responseData.length,
+      });
     } catch (error) {
-      console.error(error)
+      console.error(error);
       res
         .status(500)
         .json({ status: "error", error: "Failed to add the freeshipping." });
@@ -29,12 +35,12 @@ module.exports = {
   },
   listFreeshipping: async (req, res) => {
     try {
-      const result = await FreeShippingModel.find().populate('product_id')
-     res.status(200).json({status:"success",result})
+      const result = await FreeShippingModel.find();
+      res.status(200).json({ status: "success", result });
     } catch (error) {
       res
-      .status(500)
-      .json({ status: "error", error: "Failed to fetch freeshipping list." });
+        .status(500)
+        .json({ status: "error", error: "Failed to fetch freeshipping list." });
     }
   },
   addShipping: async (req, res) => {
@@ -113,7 +119,7 @@ module.exports = {
     }
     try {
       // Find the zone by its ID in the database
-      const zone = await Zone.findById(zoneId);
+      const zone = await zoneModel.findById(zoneId);
 
       // Check if the zone with the provided ID exists
       if (!zone) {
@@ -234,12 +240,9 @@ module.exports = {
     }
   },
   createZonedCountry: async (req, res) => {
-    //
-    console.log(req.body);
     const { zone_id, country_code } = req.body;
-
     // Find the zone by its ID in the database
-    const zone = await Zone.findById(zone_id);
+    const zone = await zoneModel.findById(zone_id);
     // Check if the zone with the provided ID exists
     if (!zone) {
       return res.status(404).json({ error: "Zone not found" });
@@ -276,6 +279,87 @@ module.exports = {
         status: "error",
         error: "Failed to add the countries.",
       });
+    }
+  },
+  getDetailCountryZoned: async (req, res) => {
+    const zoneId = req.params.id;
+    console.log(zoneId, "CountriesZoned");
+    // Check if the provided ID is a valid MongoDB ObjectId
+    if (!mongoose.isValidObjectId(zoneId)) {
+      return res.status(400).json({ error: "Invalid zone ID" });
+    }
+    try {
+      // Find the zone by its ID in the database
+      const CountryZoned = await CountriesZoned.findById(zoneId);
+      // Check if the zone with the provided ID exists
+      if (!CountryZoned) {
+        return res.status(404).json({ error: "Country zoned not found" });
+      }
+
+      // If the zone is found, return it as a response
+      res.json({ status: "success", result: CountryZoned });
+    } catch (err) {
+      // If there's an error while fetching the zone from the database
+      console.error("Error while fetching Country by ID:", err);
+      res.status(500).json({ error: "Server error" });
+    }
+  },
+  updateCountryZoned: async (req, res) => {
+    const countryId = req.params.id;
+    const zone_id = req.body.zone_id;
+    try {
+      // Find the zone in the database and update it with the provided details
+      const zone = await zoneModel.findById(zone_id);
+      // Check if the zone with the provided ID exists
+      if (!zone) {
+        return res.status(404).json({ error: "Zone not found" });
+      }
+      console.log(req.body);
+
+      const country = await CountriesZoned.findById(countryId);
+      if (!country) {
+        return res.status(404).json({ error: "country not found" });
+      }
+      Object.assign(country, {
+        // ...country,
+        zone: {
+          zone_name: zone.zone_name,
+          zoneId: zone._id,
+        },
+      });
+      await country.save();
+
+      // if (!updateCountriesZoned) {
+      //   res.status(404).json({ status: "error", error: "country not found." });
+      // }
+
+      res.status(200).json({ status: "success", result: country });
+    } catch (error) {
+      console.log(error, "server");
+      res
+        .status(500)
+        .json({ status: "error", error: "Failed to update the zone." });
+    }
+  },
+  deleteCountryZoned: async (req, res) => {
+    const countryId = req.params.id;
+    try {
+      // Find the zone in the database and delete it
+      const deletedCountryZoned = await CountriesZoned.findByIdAndDelete(
+        countryId
+      );
+
+      if (!deletedCountryZoned) {
+        res.status(404).json({ status: "error", error: "Zone not found." });
+      }
+
+      res
+        .status(200)
+        .json({ status: "success", message: "Zone deleted successfully." });
+    } catch (error) {
+      res
+        .status(500)
+        .json({ status: "error", error: "Failed to delete the zone." });
     }
   },
 };
