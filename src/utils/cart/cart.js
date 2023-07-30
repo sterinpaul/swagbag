@@ -35,4 +35,4 @@ const getCartProductSummary = (products) => {
   return resFrame;
 };
 
-module.exports = getCartProductSummary;
+module.exports = { getCartProductSummary };

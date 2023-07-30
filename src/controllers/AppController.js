@@ -61,7 +61,7 @@ var Blog = require("../models/BlogModel");
 var DeactivateReason = require("../models/DeactivateReasonModel");
 var ReturnReason = require("../models/ReturnReasonModel");
 var MobileCategory = require("../models/MobileCategoryModel");
-const getCartProductSummary = require("../utils/cart/cart");
+const { getCartProductSummary } = require("../utils/cart/cart");
 
 const SMTP_HOST = "smtp.sendgrid.net";
 const SMTP_PORT = "587";
@@ -4721,16 +4721,16 @@ module.exports = {
 
   //====================== new routs=================//
   cart_summary: async (req, res) => {
-    console.log(req.body);
+    console.log(req.body, "REq");
     try {
       if (
-        !req.body.uniqueid &&
-        !req.body.id ||
+        (!req.body.uniqueid && !req.body.id) ||
         (req.body.uniqueid == "" && req.body.id == "")
       ) {
         res.status(400).send({
           status: "error",
           message: "No user found",
+          result: "req.body.uniqueid",
         });
         return;
       }
@@ -4745,7 +4745,7 @@ module.exports = {
         where["uniqueid"] = req.body.uniqueid;
       }
 
-      console.log(where)
+      console.log(where);
 
       //  where["user"] = req.body.id;
       let products = await Cart.find(where)
@@ -4757,7 +4757,7 @@ module.exports = {
         })
         .sort({
           created_date: -1,
-        })
+        });
       if (products.length === 0) {
         res.status(400).json({
           status: "error",
@@ -4765,19 +4765,26 @@ module.exports = {
         });
       }
       const shipping_address = req.body?.shipping_address;
-      const productSummary = getCartProductSummary(products)
-      if (!shipping_address) {    
+      const productSummary = getCartProductSummary(products);
+      if (!shipping_address) {
         res.status(200).json({
           status: "success",
-          result:productSummary
+          result: productSummary,
         });
       }
 
-    
       if (shipping_address) {
+        res.status(200).json({
+          status: "success",
+          result: {
+            ...productSummary,
+            shipping: {
+              status: "calcualated",
+              price: 300,
+            },
+          },
+        });
       }
-
-
     } catch (err) {
       console.error("Error while getting summary :", err);
       res.status(500).json({ error: "Server error" });
