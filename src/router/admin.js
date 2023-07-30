@@ -3163,4 +3163,8 @@ module.exports = function (app) {
   app.get("/admin/country/:id", shippingController.getDetailCountryZoned);
   app.put("/admin/country/:id", shippingController.updateCountryZoned);
   app.delete("/admin/country/:id", shippingController.deleteCountryZoned);
+  app.get(
+    "/admin/shipping-variables/:area_type",
+    shippingController.getVariableDetail
+  );
 };

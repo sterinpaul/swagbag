@@ -4,6 +4,7 @@ const NewShipping = require("../models/newShippingModel");
 const zoneModel = require("../models/zoneModel");
 const mongoose = require("mongoose");
 const CountriesZoned = require("../models/CountriesZoned");
+const ShippingVariables = require("../models/ShippingVariables");
 
 module.exports = {
   addFreeshipping: async (req, res) => {
@@ -81,7 +82,6 @@ module.exports = {
       console.log(error);
     }
   },
-
   updateShipping: async (req, res) => {
     try {
       const id = req.params.id;
@@ -97,7 +97,6 @@ module.exports = {
       console.log(error);
     }
   },
-
   Zones: async (req, res) => {
     try {
       // Fetch all zones from the database
@@ -134,7 +133,6 @@ module.exports = {
       res.status(500).json({ error: "Server error" });
     }
   },
-
   addZone: async (req, res) => {
     //
     const { zone_name, cix_price, ciy_price, twv, free_shipping } = req.body;
@@ -162,7 +160,6 @@ module.exports = {
         .json({ status: "error", error: "Failed to add the zone." });
     }
   },
-
   updateZone: async (req, res) => {
     const { zone_name, cix_price, ciy_price, twv, free_shipping } = req.body;
     const zoneId = req.params.id;
@@ -191,7 +188,6 @@ module.exports = {
         .json({ status: "error", error: "Failed to update the zone." });
     }
   },
-
   deleteZone: async (req, res) => {
     const zoneId = req.params.id;
     try {
@@ -360,6 +356,29 @@ module.exports = {
       res
         .status(500)
         .json({ status: "error", error: "Failed to delete the zone." });
+    }
+  },
+  getVariableDetail: async (req, res) => {
+    const area_type = req.params.area_type;
+    // Check if the provided ID is a valid MongoDB ObjectId
+    // if (!(typeof area_type === "String")) {
+    //   return res.status(400).json({ error: "Invalid area name" });
+    // }
+    try {
+      // Find the zone by its ID in the database
+      const document = await ShippingVariables.findOne({ name: area_type });
+
+      // Check if the zone with the provided ID exists
+      if (!document) {
+        return res.status(404).json({ error: "Zone not found" });
+      }
+
+      // If the zone is found, return it as a response
+      res.json({ status: "success", result: document });
+    } catch (err) {
+      // If there's an error while fetching the zone from the database
+      console.error("Error while fetching zone by ID:", err);
+      res.status(500).json({ error: "Server error" });
     }
   },
 };
