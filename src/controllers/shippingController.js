@@ -439,9 +439,11 @@ module.exports = {
     }
   },
   addInserviceArea: async (req, res) => {
-    const payload = req.body;
+    const {city_name} = req.body;
     try {
-      const newInserviceArea = await inserviceAreaModel.create(payload);
+      const newInserviceArea = await inserviceAreaModel.create({
+        city_name
+      });
       res
         .status(201)
         .json({
