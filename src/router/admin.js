@@ -3147,9 +3147,9 @@ module.exports = function (app) {
 
   app.post("/admin/freeshipping", shippingController.addFreeshipping);
   app.get("/admin/freeshipping", shippingController.listFreeshipping);
-  app.get("/admin/freeshipping/:id",shippingController.getFreeShippingById)
-  app.put("/admin/freeshipping/:id",shippingController.updateFreeshipping)
-  app.delete("/admin/freeshipping/:id",shippingController.deleteFreeshipping)
+  app.get("/admin/freeshipping/:id", shippingController.getFreeShippingById);
+  app.put("/admin/freeshipping/:id", shippingController.updateFreeshipping);
+  app.delete("/admin/freeshipping/:id", shippingController.deleteFreeshipping);
   app.post("/api/addshipping", shippingController.addShipping);
   app.get("/api/shipping", shippingController.listShipping);
   app.delete("/api/deleteShipping/:id", shippingController.deleteShipping);
@@ -3165,8 +3165,14 @@ module.exports = function (app) {
   app.get("/admin/country/:id", shippingController.getDetailCountryZoned);
   app.put("/admin/country/:id", shippingController.updateCountryZoned);
   app.delete("/admin/country/:id", shippingController.deleteCountryZoned);
-  app.post("/admin/inservice_area",shippingController.addInserviceArea);
-  app.get("/admin/inservice_area",shippingController.getInserviceArea);
-  app.delete("/admin/inservice_area/:id",shippingController.deleteInserviceArea);
-  
+  app.post("/admin/inservice_area", shippingController.addInserviceArea);
+  app.get("/admin/inservice_area", shippingController.getInserviceArea);
+  app.delete(
+    "/admin/inservice_area/:id",
+    shippingController.deleteInserviceArea
+  );
+  app.get(
+    "/admin/shipping-variables/:area_type",
+    shippingController.getVariableDetail
+  );
 };
