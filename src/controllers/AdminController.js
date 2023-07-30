@@ -3789,6 +3789,7 @@ module.exports = {
                 .populate("vendor", "full_name")
                 .populate("added_by", "full_name")
                 .populate("master_category", "name")
+                .populate("freeShipping")
                 .sort({
                     _id: -1,
                 })

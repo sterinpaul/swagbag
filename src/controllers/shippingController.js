@@ -24,7 +24,7 @@ module.exports = {
           });
           await ProductModel.updateOne(
             { _id: product_id },
-            { $set: { freeShipping: true } }
+            { $set: { freeShipping:resultDta?._id  } }
           );
           return resultDta;
         })

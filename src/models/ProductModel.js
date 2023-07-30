@@ -290,8 +290,8 @@ var ProductSchema = mongoose.Schema(
       default: 0,
     },
     freeShipping:{
-      type:Boolean,
-      default:false
+      type:mongoose.Schema.Types.ObjectId,
+     ref:"freeShipping"
     }
   },
   { timestamps: true }
