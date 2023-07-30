@@ -1,6 +1,7 @@
 const countryLocalOrInternationalKeys = {
   INTERNATIONAL: "INTERNATIONAL",
   LOCAL: "LOCAL",
+  ERROR: "ERROR",
 };
 
 const InOutServiceKeys = {

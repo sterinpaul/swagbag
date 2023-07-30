@@ -10,7 +10,7 @@ const inserviceAreaModel = require("../models/inserviceAreaModel");
 
 const ShippingVariables = require("../models/ShippingVariables");
 const { countries } = require("../utils/Shippping/constants");
-
+const CountryData = require("country-state-city");
 module.exports = {
   addFreeshipping: async (req, res) => {
     const { selected_productIds, areas, from_date, to_date } = req.body;
@@ -444,10 +444,11 @@ module.exports = {
     }
   },
   addInserviceArea: async (req, res) => {
-    const { city_name } = req.body;
+    const { name, isoCode } = req.body;
     try {
       const newInserviceArea = await inserviceAreaModel.create({
-        city_name,
+        city_name: name,
+        city_code: isoCode,
       });
       res.status(201).json({
         status: "success",
@@ -481,6 +482,23 @@ module.exports = {
       res.status(200).json({ message: "Inservice area deleted successfully." });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete the inservice area." });
+    }
+  },
+  getStatesOfCountry: async (req, res) => {
+    const countryCode = req.params.countryCode;
+    try {
+      const result = CountryData.State.getStatesOfCountry(countryCode);
+      if (!result) {
+        return res
+          .status(404)
+          .json({ error: "No cities found for the given country code." });
+      }
+      res.status(200).json({ status: "success", result });
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        error: error.message,
+      });
     }
   },
 };

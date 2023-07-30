@@ -3,7 +3,7 @@ const shippingController = require("../controllers/shippingController");
 module.exports = function (app) {
   var AdminController = require("../controllers/AdminController");
   var AdminController = require("../controllers/AdminController");
-
+  var AppController = require("../controllers/AppController");
   const multer = require("multer");
   var storage = multer.diskStorage({
     destination: function (req, file, cb) {
@@ -3175,5 +3175,5 @@ module.exports = function (app) {
     "/admin/shipping-variables/:area_type",
     shippingController.getVariableDetail
   );
-  
+  app.get("/admin/cities/:countryCode", shippingController.getStatesOfCountry);
 };

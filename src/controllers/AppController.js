@@ -13,7 +13,7 @@ const nodemailer = require("nodemailer");
 const { OAuth2Client } = require("google-auth-library");
 moment().format();
 const tmoment = require("moment-timezone");
-const CountryData = require('country-state-city')
+const CountryData = require("country-state-city");
 
 // Set S3 endpoint
 const s3 = new aws.S3({
@@ -4767,11 +4767,9 @@ module.exports = {
       }
       const shipping_address = req.body?.shipping_address;
       const productSummary = getCartProductSummary(products);
-      if (
-        !shipping_address ||
-        !shipping_address?.area_code ||
-        !shipping_address?.country_code
-      ) {
+      if (!shipping_address?.area_code || !shipping_address?.country_code) {
+        console.log(shipping_address, "shipping_address*******");
+
         res.status(200).json({
           status: "success",
           result: productSummary,
@@ -4783,51 +4781,53 @@ module.exports = {
             shipping_address,
             productSummary
           );
+          console.log(result, "*********************");
           res.status(200).json({
             status: "success",
             result: result,
           });
         } catch (err) {
-          res.status(400).json({
-            status: "error",
-            message: err.message,
-          });
+          res.status(400).json({ status: "error", message: err.message });
         }
       }
     } catch (err) {
-      console.error("Error while getting summary :", err);
-      res.status(500).json({ error: "Server error" });
+      console.error("Error while getting summary :", err.message);
+      if (!res.headersSent) {
+        res.status(500).json({ error: "Server error", message: err.message });
+      }
     }
   },
-  getAllCountries:async(req,res)=>{
+  getAllCountries: async (req, res) => {
     try {
-      const result = CountryData.Country.getAllCountries()
-      if(!result){
-        res.status(404).json({status:"error",error:"No countries found."})
+      const result = CountryData.Country.getAllCountries();
+      if (!result) {
+        res.status(404).json({ status: "error", error: "No countries found." });
       }
-      res.status(200).json({status:"success",result})
+      res.status(200).json({ status: "success", result });
     } catch (error) {
       res.status(500).json({
         status: "error",
-        error: error.message
+        error: error.message,
       });
     }
   },
-  getCitiesOfCountry:async(req,res)=>{
+  getCitiesOfCountry: async (req, res) => {
     const countryCode = req.params.countryCode;
     try {
       const result = CountryData.City.getCitiesOfCountry(countryCode);
       if (!result) {
-        return res.status(404).json({ error: 'No cities found for the given country code.' });
+        return res
+          .status(404)
+          .json({ error: "No cities found for the given country code." });
       }
-      res.status(200).json({status:"success",result})
+      res.status(200).json({ status: "success", result });
     } catch (error) {
       res.status(500).json({
         status: "error",
-        error: error.message
+        error: error.message,
       });
     }
-  }
+  },
 };
 const response = {
   result: {

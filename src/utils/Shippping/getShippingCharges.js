@@ -17,10 +17,9 @@ const {
 const getShippingCharges = async (shipping_address, cart_summary) => {
   const localOrInternationalArea =
     countryLocalOrInternationalClassification(shipping_address);
-
   //Logics for local areas
   if (localOrInternationalArea === countryLocalOrInternationalKeys.LOCAL) {
-    const serviceType = localInOutServiceController(shipping_address);
+    const serviceType = await localInOutServiceController(shipping_address);
     //logic for InService area
     if (serviceType === InOutServiceKeys.IN_SERVICE_AREA) {
       return await InServiceAreaShippingChargeCalculator(
