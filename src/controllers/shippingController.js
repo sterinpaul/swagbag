@@ -93,6 +93,10 @@ module.exports = {
       if (response === null) {
         res.status(404).json({ error: "Failed to delete free shipping." });
       }
+      await ProductModel.updateOne(
+        { _id: response.product_id },
+        { $set: { freeShipping:null  } }
+      );
       res.status(200).json({ status: "success", result: response });
     } catch (error) {
       res.status(500).json({ error: "Failed to delete free shipping." });
