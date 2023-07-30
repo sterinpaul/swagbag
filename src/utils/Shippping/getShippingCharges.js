@@ -1,14 +1,20 @@
-import {
+const {
   InServiceAreaShippingChargeCalculator,
   OutServiceAreaShippingChargeCalculator,
-} from "./calclulators";
-import { InOutServiceKeys, countryLocalOrInternationalKeys } from "./constants";
-import {
-  countryLocalOrInternationalClassification,
-  localInOutServiceController,
-} from "./controller";
+} = require("./calclulators");
 
-export const getShippingCharges = ({ area, products }) => {
+const {
+  countryLocalOrInternationalKeys,
+  InOutServiceKeys,
+} = require("./constants");
+
+const {
+  countryLocalOrInternationalClassification,
+  internationalZoneController,
+  localInOutServiceController,
+} = require("./controller");
+
+const getShippingCharges = (shipping_address, products) => {
   const localOrInternationalArea = countryLocalOrInternationalClassification();
 
   //Logics for local areas
@@ -16,11 +22,11 @@ export const getShippingCharges = ({ area, products }) => {
     const serviceType = localInOutServiceController();
     //logic for InService area
     if (serviceType === InOutServiceKeys.IN_SERVICE_AREA) {
-      InServiceAreaShippingChargeCalculator({ area, products });
+      InServiceAreaShippingChargeCalculator({ shipping_address, products });
     }
     //logic for Out Service area area
     if (serviceType === InOutServiceKeys.OUT_SERVICE_AREA) {
-      OutServiceAreaShippingChargeCalculator({ area, products });
+      OutServiceAreaShippingChargeCalculator({ shipping_address, products });
     }
   }
   //Logics for Internationals
@@ -29,3 +35,4 @@ export const getShippingCharges = ({ area, products }) => {
   ) {
   }
 };
+module.exports = { getShippingCharges };

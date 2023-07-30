@@ -1,15 +1,23 @@
-import { InOutServiceKeys, countryLocalOrInternationalKeys } from "./constants";
+const {
+  countryLocalOrInternationalKeys,
+  InOutServiceKeys,
+} = require("./constants");
 
-export const countryLocalOrInternationalClassification = () => {
+const countryLocalOrInternationalClassification = () => {
   if (true) {
     return countryLocalOrInternationalKeys.INTERNATIONAL;
   } else return countryLocalOrInternationalKeys.LOCAL;
 };
-export const localInOutServiceController = () => {
+const localInOutServiceController = () => {
   if (true) {
     return InOutServiceKeys.IN_SERVICE_AREA;
   } else return InOutServiceKeys.OUT_SERVICE_AREA;
 };
-export const internationalZoneController = () => {
+const internationalZoneController = () => {
   return;
+};
+module.exports = {
+  countryLocalOrInternationalClassification,
+  localInOutServiceController,
+  internationalZoneController,
 };
