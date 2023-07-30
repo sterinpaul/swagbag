@@ -4,6 +4,9 @@ const NewShipping = require("../models/newShippingModel");
 const zoneModel = require("../models/zoneModel");
 const mongoose = require("mongoose");
 const CountriesZoned = require("../models/CountriesZoned");
+const { json } = require("express");
+const freeshippingModel = require("../models/freeshippingModel");
+
 const ShippingVariables = require("../models/ShippingVariables");
 
 module.exports = {
@@ -18,6 +21,10 @@ module.exports = {
             from_date,
             to_date,
           });
+          await ProductModel.updateOne(
+            { _id: product_id },
+            { $set: { freeShipping: true } }
+          );
           return resultDta;
         })
       );
@@ -36,12 +43,60 @@ module.exports = {
   },
   listFreeshipping: async (req, res) => {
     try {
-      const result = await FreeShippingModel.find();
+      const result = await FreeShippingModel.find().populate("product_id");
       res.status(200).json({ status: "success", result });
     } catch (error) {
       res
         .status(500)
         .json({ status: "error", error: "Failed to fetch freeshipping list." });
+    }
+  },
+  getFreeShippingById: async (req, res) => {
+    const id = req.params.id;
+    try {
+      const result = await FreeShippingModel.findById(id).populate(
+        "product_id"
+      );
+      if (!result) {
+        res.status(404).json({
+          error: "Free shipping data not found.",
+          message: `The free shipping with ID ${id} does not exist.`,
+        });
+      }
+      res.status(200).json({ status: "success", result });
+    } catch (error) {
+      res.status(500), json({ error: "Failed to find free shipping by ID." });
+    }
+  },
+  updateFreeshipping: async (req, res) => {
+    const id = req.params.id;
+    const update = req.body;
+    try {
+      const isfreeShipping = await FreeShippingModel.findById(id);
+      if (!isfreeShipping) {
+        res
+          .status(404)
+          .json({
+            error: "Free shipping not found",
+            message: `The free shipping with ID ${id} does not exist.`,
+          });
+      }
+      Object.assign(isfreeShipping, update);
+      await isfreeShipping.save();
+      res.status(200).json({ status: "success", result: isfreeShipping });
+    } catch (error) {
+      res.status(500), json({ error: "Failed to update free shipping." });
+    }
+  },
+  deleteFreeshipping: async (req, res) => {
+    try {
+      const response = await FreeShippingModel.findByIdAndDelete(req.params.id);
+      if (response === null) {
+        res.status(404).json({ error: "Failed to delete free shipping." });
+      }
+      res.status(200).json({ status: "success", result: response });
+    } catch (error) {
+      res.status(500).json({ error: "Failed to delete free shipping." });
     }
   },
   addShipping: async (req, res) => {

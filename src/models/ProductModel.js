@@ -289,12 +289,10 @@ var ProductSchema = mongoose.Schema(
       type: Number,
       default: 0,
     },
-    shippingOption: [
-      {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: "newshippings",
-      },
-    ],
+    freeShipping:{
+      type:Boolean,
+      default:false
+    }
   },
   { timestamps: true }
 );
