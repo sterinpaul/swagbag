@@ -4717,4 +4717,57 @@ module.exports = {
         });
       });
   },
+
+  //====================== new routs=================//
+  cart_summary: function (req, res) {
+    if (
+      req.body.uniqueid ||
+      req.body.id ||
+      (req.body.uniqueid == "" && req.body.id == "")
+    ) {
+      res.status(400).send({
+        status: "error",
+        message: "No user found",
+      });
+      return;
+    }
+
+    var where = {};
+
+    if (req.body.id && req.body.id != "") {
+      where["user"] = req.body.id;
+    }
+
+    if (req.body.uniqueid && req.body.uniqueid != "") {
+      where["uniqueid"] = req.body.uniqueid;
+    }
+
+    //  where["user"] = req.body.id;
+    let products = [];
+    Cart.find(where)
+
+      .populate({
+        path: "product",
+      })
+      .populate({
+        path: "category",
+      })
+      .sort({
+        created_date: -1,
+      })
+      .then((response) => {
+        products = response;
+
+        res.status(200).send({
+          status: "success",
+          result: response,
+        });
+      });
+    if (products.length === 0) {
+      res.status(400).send({
+        status: "error",
+        message: "No products in cart",
+      });
+    }
+  },
 };
