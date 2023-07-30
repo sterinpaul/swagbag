@@ -1,4 +1,4 @@
-export const InServiceAreaShippingChargeCalculator = ({ area, products }) => {
+ const InServiceAreaShippingChargeCalculator = ({ area, products }) => {
   //Variables are TPV, TWV, SI, C
   // TPV : Threshold price value is set by admin
   // TWV : Threshold Weight value is set by admin
@@ -38,7 +38,7 @@ export const InServiceAreaShippingChargeCalculator = ({ area, products }) => {
   }
 };
 
-export const OutServiceAreaShippingChargeCalculator = ({ area, products }) => {
+ const OutServiceAreaShippingChargeCalculator = ({ area, products }) => {
   //Variables are TWV, SI, C
   // TWV : Threshold Weight value is set by admin
   // SI : Standard shipping service price
@@ -68,3 +68,5 @@ export const OutServiceAreaShippingChargeCalculator = ({ area, products }) => {
     return SI + additionCharge;
   }
 };
+
+module.exports = {OutServiceAreaShippingChargeCalculator,InServiceAreaShippingChargeCalculator}

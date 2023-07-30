@@ -1,9 +1,11 @@
-export const countryLocalOrInternationalKeys = {
+ const countryLocalOrInternationalKeys = {
   INTERNATIONAL: "INTERNATIONAL",
   LOCAL: "LOCAL",
 };
 
-export const InOutServiceKeys = {
+ const InOutServiceKeys = {
   IN_SERVICE_AREA: "IN_SERVICE_AREA",
   OUT_SERVICE_AREA: "OUT_SERVICE_AREA",
 };
+
+module.exports = {countryLocalOrInternationalKeys,InOutServiceKeys}
