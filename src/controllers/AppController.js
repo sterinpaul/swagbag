@@ -4719,7 +4719,7 @@ module.exports = {
   },
 
   //====================== new routs=================//
-  cart_summary: function (req, res) {
+  cart_summary: async (req, res) => {
     if (
       req.body.uniqueid ||
       req.body.id ||
@@ -4743,8 +4743,7 @@ module.exports = {
     }
 
     //  where["user"] = req.body.id;
-    let products = [];
-    Cart.find(where)
+    let products = await Cart.find(where)
 
       .populate({
         path: "product",
@@ -4754,14 +4753,6 @@ module.exports = {
       })
       .sort({
         created_date: -1,
-      })
-      .then((response) => {
-        products = response;
-
-        res.status(200).send({
-          status: "success",
-          result: response,
-        });
       });
     if (products.length === 0) {
       res.status(400).send({
@@ -4769,5 +4760,33 @@ module.exports = {
         message: "No products in cart",
       });
     }
+    if (!req.body.uniqueid?.shipping_address) {
+      res.status(200).send({
+        status: "success",
+        result: response.result,
+      });
+    }
+    if (req.body.uniqueid?.shipping_address) {
+    }
   },
+};
+const response = {
+  result: {
+    products: [
+      {
+        name: "product name",
+        count: 4,
+        price: 12,
+        total_items_price: 48,
+      },
+    ],
+    subtotal: 0,
+    shipping: {
+      status: "tobe_calcualte/calculated",
+      price: 0,
+    },
+    tax: 0,
+    total: 0,
+  },
+  status: "success",
 };
