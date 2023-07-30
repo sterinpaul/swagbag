@@ -4766,19 +4766,16 @@ module.exports = {
       }
       const shipping_address = req.body?.shipping_address;
       const productSummary = getCartProductSummary(products);
-      if (!shipping_address) {
+      if (
+        !shipping_address ||
+        !shipping_address?.area_code ||
+        !shipping_address?.country_code
+      ) {
         res.status(200).json({
           status: "success",
           result: productSummary,
         });
       }
-      if (!shipping_address?.area_code || !shipping_address?.country_code) {
-        res.status(400).json({
-          status: "error",
-          message: "area_code oru country_code error",
-        });
-      }
-
       if (shipping_address) {
         try {
           const result = await getShippingCharges(
