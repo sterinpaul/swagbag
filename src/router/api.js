@@ -82,4 +82,7 @@ module.exports = function (app) {
   app.post("/api/update-stock", AppController.update_stock);
   //============ new routs ==================//
   app.post("/api/get-cart-summary", AppController.cart_summary);
+
+  app.get("/api/get_all_countries",AppController.getAllCountries);
+  app.get("/api/cities/:countryCode",AppController.getCitiesOfCountry)
 };

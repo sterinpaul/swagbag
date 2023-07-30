@@ -13,6 +13,7 @@ const nodemailer = require("nodemailer");
 const { OAuth2Client } = require("google-auth-library");
 moment().format();
 const tmoment = require("moment-timezone");
+const CountryData = require('country-state-city')
 
 // Set S3 endpoint
 const s3 = new aws.S3({
@@ -4798,6 +4799,35 @@ module.exports = {
       res.status(500).json({ error: "Server error" });
     }
   },
+  getAllCountries:async(req,res)=>{
+    try {
+      const result = CountryData.Country.getAllCountries()
+      if(!result){
+        res.status(404).json({status:"error",error:"No countries found."})
+      }
+      res.status(200).json({status:"success",result})
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        error: error.message
+      });
+    }
+  },
+  getCitiesOfCountry:async(req,res)=>{
+    const countryCode = req.params.countryCode;
+    try {
+      const result = CountryData.City.getCitiesOfCountry(countryCode);
+      if (!result) {
+        return res.status(404).json({ error: 'No cities found for the given country code.' });
+      }
+      res.status(200).json({status:"success",result})
+    } catch (error) {
+      res.status(500).json({
+        status: "error",
+        error: error.message
+      });
+    }
+  }
 };
 const response = {
   result: {

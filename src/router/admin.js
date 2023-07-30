@@ -3175,4 +3175,5 @@ module.exports = function (app) {
     "/admin/shipping-variables/:area_type",
     shippingController.getVariableDetail
   );
+  
 };
