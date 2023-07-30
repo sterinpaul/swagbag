@@ -453,7 +453,7 @@ module.exports = {
       res.status(500).json({ error: "Failed to create the inservice area." });
     }
   },
-  getAllInserviceArea: async (req, res) => {
+  getInserviceArea: async (req, res) => {
     try {
       const result = await inserviceAreaModel.find({});
       // if(!result){
