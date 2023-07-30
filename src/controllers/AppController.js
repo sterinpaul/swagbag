@@ -4724,8 +4724,8 @@ module.exports = {
     console.log(req.body);
     try {
       if (
-        req.body.uniqueid ||
-        req.body.id ||
+        !req.body.uniqueid &&
+        !req.body.id ||
         (req.body.uniqueid == "" && req.body.id == "")
       ) {
         res.status(400).send({
@@ -4745,6 +4745,8 @@ module.exports = {
         where["uniqueid"] = req.body.uniqueid;
       }
 
+      console.log(where)
+
       //  where["user"] = req.body.id;
       let products = await Cart.find(where)
         .populate({
@@ -4756,23 +4758,26 @@ module.exports = {
         .sort({
           created_date: -1,
         })
-        .then((res) => res);
       if (products.length === 0) {
         res.status(400).json({
           status: "error",
           message: "No products in cart",
         });
       }
-      if (!req.body?.shipping_address) {
+      const shipping_address = req.body?.shipping_address;
+      const productSummary = getCartProductSummary(products)
+      if (!shipping_address) {    
         res.status(200).json({
           status: "success",
-          result: products,
-          // result: await getCartProductSummary(products),
+          result:productSummary
         });
       }
-      const { city, country } = req.body?.shipping_address;
-      if (city && country) {
+
+    
+      if (shipping_address) {
       }
+
+
     } catch (err) {
       console.error("Error while getting summary :", err);
       res.status(500).json({ error: "Server error" });
