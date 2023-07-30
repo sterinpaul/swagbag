@@ -62,6 +62,7 @@ var DeactivateReason = require("../models/DeactivateReasonModel");
 var ReturnReason = require("../models/ReturnReasonModel");
 var MobileCategory = require("../models/MobileCategoryModel");
 const { getCartProductSummary } = require("../utils/cart/cart");
+const { getShippingCharges } = require("../utils/Shippping/getShippingCharges");
 
 const SMTP_HOST = "smtp.sendgrid.net";
 const SMTP_PORT = "587";
@@ -4721,7 +4722,6 @@ module.exports = {
 
   //====================== new routs=================//
   cart_summary: async (req, res) => {
-    console.log(req.body, "REq");
     try {
       if (
         (!req.body.uniqueid && !req.body.id) ||
@@ -4772,18 +4772,29 @@ module.exports = {
           result: productSummary,
         });
       }
+      if (!shipping_address?.area_code || !shipping_address?.country_code) {
+        res.status(400).json({
+          status: "error",
+          message: "area_code oru country_code error",
+        });
+      }
 
       if (shipping_address) {
-        res.status(200).json({
-          status: "success",
-          result: {
-            ...productSummary,
-            shipping: {
-              status: "calcualated",
-              price: 300,
-            },
-          },
-        });
+        try {
+          const result = await getShippingCharges(
+            shipping_address,
+            productSummary
+          );
+          res.status(200).json({
+            status: "success",
+            result: result,
+          });
+        } catch (err) {
+          res.status(400).json({
+            status: "error",
+            message: err.message,
+          });
+        }
       }
     } catch (err) {
       console.error("Error while getting summary :", err);

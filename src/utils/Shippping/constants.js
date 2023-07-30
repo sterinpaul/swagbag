@@ -1,11 +1,59 @@
- const countryLocalOrInternationalKeys = {
+const countryLocalOrInternationalKeys = {
   INTERNATIONAL: "INTERNATIONAL",
   LOCAL: "LOCAL",
 };
 
- const InOutServiceKeys = {
+const InOutServiceKeys = {
   IN_SERVICE_AREA: "IN_SERVICE_AREA",
   OUT_SERVICE_AREA: "OUT_SERVICE_AREA",
 };
+const countries = [
+  { name: "United States", code: "US" },
+  { name: "Canada", code: "CA" },
+  { name: "United Kingdom", code: "UK" },
+  { name: "Australia", code: "AU" },
+  { name: "Germany", code: "DE" },
+  { name: "France", code: "FR" },
+  { name: "Spain", code: "ES" },
+  { name: "Italy", code: "IT" },
+  { name: "Japan", code: "JP" },
+  { name: "South Korea", code: "KR" },
+  { name: "China", code: "CN" },
+  { name: "India", code: "IN" },
+  { name: "Brazil", code: "BR" },
+  { name: "Mexico", code: "MX" },
+  { name: "Russia", code: "RU" },
+  { name: "South Africa", code: "ZA" },
+  { name: "Egypt", code: "EG" },
+  { name: "Saudi Arabia", code: "SA" },
+  { name: "United Arab Emirates", code: "AE" },
+  { name: "Turkey", code: "TR" },
+  { name: "Greece", code: "GR" },
+  { name: "Sweden", code: "SE" },
+  { name: "Norway", code: "NO" },
+  { name: "Finland", code: "FI" },
+  { name: "Denmark", code: "DK" },
+  { name: "Netherlands", code: "NL" },
+  { name: "Belgium", code: "BE" },
+  { name: "Switzerland", code: "CH" },
+  { name: "Austria", code: "AT" },
+  { name: "Poland", code: "PL" },
+  { name: "Czech Republic", code: "CZ" },
+  { name: "Hungary", code: "HU" },
+  { name: "Slovakia", code: "SK" },
+  { name: "Romania", code: "RO" },
+  { name: "Bulgaria", code: "BG" },
+  { name: "Ukraine", code: "UA" },
+  { name: "Israel", code: "IL" },
+  { name: "South Korea", code: "KR" },
+  { name: "New Zealand", code: "NZ" },
+  { name: "Argentina", code: "AR" },
+  { name: "Chile", code: "CL" },
+  { name: "United Arab Emirates", code: "UAE" },
+];
 
-module.exports = {countryLocalOrInternationalKeys,InOutServiceKeys}
+module.exports = {
+  countryLocalOrInternationalKeys,
+  InOutServiceKeys,
+  countries,
+};

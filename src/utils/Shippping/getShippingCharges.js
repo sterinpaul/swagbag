@@ -14,19 +14,26 @@ const {
   localInOutServiceController,
 } = require("./controller");
 
-const getShippingCharges = (shipping_address, products) => {
-  const localOrInternationalArea = countryLocalOrInternationalClassification();
+const getShippingCharges = async (shipping_address, cart_summary) => {
+  const localOrInternationalArea =
+    countryLocalOrInternationalClassification(shipping_address);
 
   //Logics for local areas
   if (localOrInternationalArea === countryLocalOrInternationalKeys.LOCAL) {
-    const serviceType = localInOutServiceController();
+    const serviceType = localInOutServiceController(shipping_address);
     //logic for InService area
     if (serviceType === InOutServiceKeys.IN_SERVICE_AREA) {
-      InServiceAreaShippingChargeCalculator({ shipping_address, products });
+      return await InServiceAreaShippingChargeCalculator(
+        shipping_address,
+        cart_summary
+      );
     }
     //logic for Out Service area area
     if (serviceType === InOutServiceKeys.OUT_SERVICE_AREA) {
-      OutServiceAreaShippingChargeCalculator({ shipping_address, products });
+      return await OutServiceAreaShippingChargeCalculator(
+        shipping_address,
+        cart_summary
+      );
     }
   }
   //Logics for Internationals

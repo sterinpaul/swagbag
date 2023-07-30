@@ -135,20 +135,20 @@ var ProductSchema = mongoose.Schema(
       default: 0,
     },
     weight: {
-      type: String,
-      default: "",
+      type: Number,
+      default: 0,
     },
     length: {
-      type: String,
-      default: "",
+      type: Number,
+      default: 0,
     },
     width: {
-      type: String,
-      default: "",
+      type: Number,
+      default: 0,
     },
     height: {
-      type: String,
-      default: "",
+      type: Number,
+      default: 0,
     },
     // shipping: {
     //     type: mongoose.Schema.Types.ObjectId,

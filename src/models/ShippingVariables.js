@@ -24,6 +24,11 @@ const shippingVariables = new mongoose.Schema(
       type: Number,
       required: true,
     },
+    free_shipping: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
   },
   { timestamps: true } // Optional: Add timestamps for createdAt and updatedAt fields
 );
