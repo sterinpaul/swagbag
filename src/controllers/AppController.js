@@ -61,6 +61,7 @@ var Blog = require("../models/BlogModel");
 var DeactivateReason = require("../models/DeactivateReasonModel");
 var ReturnReason = require("../models/ReturnReasonModel");
 var MobileCategory = require("../models/MobileCategoryModel");
+const getCartProductSummary = require("../utils/cart/cart");
 
 const SMTP_HOST = "smtp.sendgrid.net";
 const SMTP_PORT = "587";
@@ -4720,53 +4721,61 @@ module.exports = {
 
   //====================== new routs=================//
   cart_summary: async (req, res) => {
-    if (
-      req.body.uniqueid ||
-      req.body.id ||
-      (req.body.uniqueid == "" && req.body.id == "")
-    ) {
-      res.status(400).send({
-        status: "error",
-        message: "No user found",
-      });
-      return;
-    }
+    console.log(req.body);
+    try {
+      if (
+        req.body.uniqueid ||
+        req.body.id ||
+        (req.body.uniqueid == "" && req.body.id == "")
+      ) {
+        res.status(400).send({
+          status: "error",
+          message: "No user found",
+        });
+        return;
+      }
 
-    var where = {};
+      var where = {};
 
-    if (req.body.id && req.body.id != "") {
-      where["user"] = req.body.id;
-    }
+      if (req.body.id && req.body.id != "") {
+        where["user"] = req.body.id;
+      }
 
-    if (req.body.uniqueid && req.body.uniqueid != "") {
-      where["uniqueid"] = req.body.uniqueid;
-    }
+      if (req.body.uniqueid && req.body.uniqueid != "") {
+        where["uniqueid"] = req.body.uniqueid;
+      }
 
-    //  where["user"] = req.body.id;
-    let products = await Cart.find(where)
-
-      .populate({
-        path: "product",
-      })
-      .populate({
-        path: "category",
-      })
-      .sort({
-        created_date: -1,
-      });
-    if (products.length === 0) {
-      res.status(400).send({
-        status: "error",
-        message: "No products in cart",
-      });
-    }
-    if (!req.body.uniqueid?.shipping_address) {
-      res.status(200).send({
-        status: "success",
-        result: response.result,
-      });
-    }
-    if (req.body.uniqueid?.shipping_address) {
+      //  where["user"] = req.body.id;
+      let products = await Cart.find(where)
+        .populate({
+          path: "product",
+        })
+        .populate({
+          path: "category",
+        })
+        .sort({
+          created_date: -1,
+        })
+        .then((res) => res);
+      if (products.length === 0) {
+        res.status(400).json({
+          status: "error",
+          message: "No products in cart",
+        });
+      }
+      if (!req.body?.shipping_address) {
+        res.status(200).json({
+          status: "success",
+          result: products,
+          // result: await getCartProductSummary(products),
+        });
+      }
+      const { city, country } = req.body?.shipping_address;
+      if (city && country) {
+      }
+    } catch (err) {
+      console.error("Error while getting summary :", err);
+      res.status(500).json({ error: "Server error" });
     }
   },
 };
@@ -4778,12 +4787,17 @@ const response = {
         count: 4,
         price: 12,
         total_items_price: 48,
+        free_shipping_areas: {
+          in_service: null,
+          out_service: null,
+          international: null,
+        },
       },
     ],
-    subtotal: 0,
+    subtotal: null,
     shipping: {
       status: "tobe_calcualte/calculated",
-      price: 0,
+      price: null,
     },
     tax: 0,
     total: 0,
